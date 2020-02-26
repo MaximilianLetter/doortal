@@ -13,11 +13,12 @@ public class EnterPortal : MonoBehaviour
     bool wasInFront;
     bool inside;
 
+    bool hasCollided;
+
     // Hack for editor setup
     void Start()
     {
         device = GameObject.FindWithTag("MainCamera").transform;
-        Debug.Log(device);
         SetMaterials(false);
     }
 
@@ -33,8 +34,11 @@ public class EnterPortal : MonoBehaviour
 
     bool GetDeviceInFront()
     {
+        // Adjust clipping bug
+        Vector3 worldPos = device.position + device.forward * Camera.main.nearClipPlane;
+
         // Position of device relative to the portal
-        Vector3 pos = transform.InverseTransformPoint(device.position);
+        Vector3 pos = transform.InverseTransformPoint(worldPos);
         return pos.z >= 0 ? true : false;
     }
 
@@ -43,11 +47,21 @@ public class EnterPortal : MonoBehaviour
         if (other.transform != device) return;
 
         wasInFront = GetDeviceInFront();
+        hasCollided = true;
     }
 
-    void OnTriggerStay(Collider other)
+    void OnTriggerExit(Collider other)
     {
         if (other.transform != device) return;
+
+        hasCollided = false;
+    }
+
+    void WhileColliding()
+    {
+        // Adjust flickering bug, not completely solved tho
+
+        if (!hasCollided) return;
 
         bool isInFront = GetDeviceInFront();
 
@@ -63,5 +77,11 @@ public class EnterPortal : MonoBehaviour
     void OnDestroy()
     {
         SetMaterials(true);
+    }
+
+    private void Update()
+    {
+        // NOTE: Could be coroutine?
+        WhileColliding();
     }
 }

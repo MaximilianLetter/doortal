@@ -219,6 +219,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 822cee42d67e0d54dbb324ad88ceff98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  speed: 0.1
 --- !u!54 &175876399
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -255,6 +256,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4360567775233830681, guid: 07d4daf42569beb4491e4e4a49bbfcaf,
+        type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4360567775233830681, guid: 07d4daf42569beb4491e4e4a49bbfcaf,
+        type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8648192683963974061, guid: 07d4daf42569beb4491e4e4a49bbfcaf,
         type: 3}
       propertyPath: m_LocalPosition.x
