@@ -24,15 +24,18 @@ public class CameraImageManipulation : MonoBehaviour
     private RawImage rawImage;
     public GameObject uiDisplay;
 
+    // Array to catch OpenCV results
+    private NativeArray<byte> nativeByteArray;
+
     // NOTE: UNITY_ANDROID is always active since its the build platform
 #if UNITY_EDITOR
     private const string LIBRARY_NAME = "ComputerVision";
 #elif UNITY_ANDROID
     private const string LIBRARY_NAME = "native-lib";
 #endif
-    // TODO, NOTE: the Android dll is not found
+
     [DllImport(LIBRARY_NAME)]
-    private static extern void ProcessImage(ref Color32[] rawImage, int width, int height);
+    private unsafe static extern void ProcessImage(void* result, ref Color32[] rawImage, int width, int height);
 
     void OnEnable()
     {
@@ -44,6 +47,8 @@ public class CameraImageManipulation : MonoBehaviour
         Debug.Log("UNITY_EDITOR | WEBCAM_ENABLE");
 
         webCam = new WebCamTexture();
+
+        nativeByteArray = new NativeArray<byte>(8, Allocator.Persistent);
 
         rawImage.texture = webCam;
         //rawImage.material.mainTexture = webCam;
@@ -66,6 +71,8 @@ public class CameraImageManipulation : MonoBehaviour
 #if UNITY_EDITOR
         Debug.Log("UNITY_EDITOR | WEBCAM_DISABLE");
         webCam.Stop();
+
+        nativeByteArray.Dispose();
 #elif UNITY_ANDROID
         // NOTE: documentation says 'cameraFrameReceived'
         cameraManager.frameReceived -= OnCameraFrameReceived;
@@ -77,23 +84,35 @@ public class CameraImageManipulation : MonoBehaviour
     {
         if (webCam.isPlaying)
         {
-            var pixels = webCam.GetPixels32();
-
-            // Call to C++ Code
-            ProcessImage(ref pixels, webCam.width, webCam.height);
-
-            camTexture = new Texture2D(
-                webCam.width,
-                webCam.height
-            );
-
-            camTexture.SetPixels32(pixels);
-            camTexture.Apply();
-
-            rawImage.texture = camTexture;
+            OnWebcamFrameReceived();
         }
     }
 #endif
+
+    unsafe void OnWebcamFrameReceived()
+    {
+        var pixels = webCam.GetPixels32();
+
+        // Call to C++ Code
+        void* ptr = NativeArrayUnsafeUtility.GetUnsafePtr(nativeByteArray);
+
+        ProcessImage(ptr, ref pixels, webCam.width, webCam.height);
+
+        for (int i = 0; i < nativeByteArray.Length; i++)
+        {
+            Debug.Log(nativeByteArray[i]);
+        }
+
+        camTexture = new Texture2D(
+            webCam.width,
+            webCam.height
+        );
+
+        camTexture.SetPixels32(pixels);
+        camTexture.Apply();
+
+        rawImage.texture = camTexture;
+    }
 
     unsafe void OnCameraFrameReceived(ARCameraFrameEventArgs eventArgs)
     {
@@ -149,7 +168,7 @@ public class CameraImageManipulation : MonoBehaviour
 
         // C++ call
         Debug.Log("______PROCESS_IMAGE_________");
-        ProcessImage(ref rawPixels, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y);
+        //ProcessImage(ref rawPixels, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y);
 
         camTexture.SetPixels32(rawPixels);
         camTexture.Apply();
