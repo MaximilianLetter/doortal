@@ -40,7 +40,7 @@ public class CameraImageManipulation : MonoBehaviour
 #endif
 
     [DllImport(LIBRARY_NAME)]
-    private unsafe static extern void ProcessImage(void* result, ref Color32[] rawImage, int width, int height);
+    private unsafe static extern bool ProcessImage(void* result, ref Color32[] rawImage, int width, int height);
 
     void OnEnable()
     {
@@ -105,7 +105,16 @@ public class CameraImageManipulation : MonoBehaviour
         // Call to C++ Code
         void* ptr = NativeArrayUnsafeUtility.GetUnsafePtr(nativeByteArray);
 
-        ProcessImage(ptr, ref pixels, webCam.width, webCam.height);
+        // if a rectangle was found
+        if (ProcessImage(ptr, ref pixels, webCam.width, webCam.height))
+        {
+            nativeByteArray.CopyTo(managedArray);
+
+            uiManager.DrawIndicator(managedArray);
+        } else
+        {
+            uiManager.ClearIndicator();
+        }
 
         //for (int i = 0; i < nativeByteArray.Length; i += 2)
         //{
@@ -113,10 +122,6 @@ public class CameraImageManipulation : MonoBehaviour
         //    Debug.Log(nativeByteArray[i]);
         //    Debug.Log(nativeByteArray[i+1]);
         //}
-
-        nativeByteArray.CopyTo(managedArray);
-
-        uiManager.DrawIndicator(managedArray);
 
         camTexture = new Texture2D(
             webCam.width,
