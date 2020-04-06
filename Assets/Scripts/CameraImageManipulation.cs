@@ -25,7 +25,8 @@ public class CameraImageManipulation : MonoBehaviour
     public GameObject uiDisplay;
 
     // Array to catch OpenCV results
-    private NativeArray<byte> nativeByteArray;
+    //private NativeArray<byte> nativeByteArray;
+    private NativeArray<float> nativeByteArray;
 
     // NOTE: UNITY_ANDROID is always active since its the build platform
 #if UNITY_EDITOR
@@ -48,7 +49,9 @@ public class CameraImageManipulation : MonoBehaviour
 
         webCam = new WebCamTexture();
 
-        nativeByteArray = new NativeArray<byte>(8, Allocator.Persistent);
+        //nativeByteArray = new NativeArray<byte>(8, Allocator.Persistent);
+        const int CORNERS = 4;
+        nativeByteArray = new NativeArray<float>(CORNERS * 2, Allocator.Persistent);
 
         rawImage.texture = webCam;
         //rawImage.material.mainTexture = webCam;
@@ -98,9 +101,11 @@ public class CameraImageManipulation : MonoBehaviour
 
         ProcessImage(ptr, ref pixels, webCam.width, webCam.height);
 
-        for (int i = 0; i < nativeByteArray.Length; i++)
+        for (int i = 0; i < nativeByteArray.Length; i += 2)
         {
+            if (i == 0) Debug.Log("______");
             Debug.Log(nativeByteArray[i]);
+            Debug.Log(nativeByteArray[i+1]);
         }
 
         camTexture = new Texture2D(
