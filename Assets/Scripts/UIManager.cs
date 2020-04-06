@@ -20,12 +20,16 @@ public class UIManager : MonoBehaviour
     public void DrawIndicator(float[] arr)
     {
         int scaleUp = 1;
+        Vector2[] points = new Vector2[5];
         for (int i = 0; i < 4; i++)
         {
             Vector2 point = new Vector2( arr[i*2] * scaleUp, arr[i*2 + 1] * scaleUp );
-            uiLineRenderer.Points.SetValue(point, i);
+            points[i] = point;
         }
-        uiLineRenderer.SetAllDirty();
+
+        points[4] = new Vector2(arr[0] * scaleUp, arr[1] * scaleUp);
+        uiLineRenderer.Points = points;
+        //uiLineRenderer.SetAllDirty();
 
         if (!active)
         {

@@ -1,48 +1,48 @@
 ﻿  ComputerVision.cpp
-D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(69,40): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
+D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(78,35): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
           with
           [
               _Tp=int
           ]
-D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(70,40): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
+D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(79,35): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
           with
           [
               _Tp=int
           ]
-D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(71,40): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
+D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(80,35): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
           with
           [
               _Tp=int
           ]
-D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(72,40): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
+D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(81,35): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
           with
           [
               _Tp=int
           ]
-D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(73,40): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
+D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(82,35): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
           with
           [
               _Tp=int
           ]
-D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(74,40): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
+D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(83,35): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
           with
           [
               _Tp=int
           ]
-D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(75,40): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
+D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(84,35): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
           with
           [
               _Tp=int
           ]
-D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(76,40): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
+D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\ComputerVision\ComputerVision.cpp(85,35): warning C4244: '=': conversion from '_Tp' to 'float', possible loss of data
           with
           [
               _Tp=int
           ]
      Creating library D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\x64\Release\ComputerVision.lib and object D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\x64\Release\ComputerVision.exp
   Generating code
-  10 of 281 functions ( 3.6%) were compiled, the rest were copied from previous compilation.
+  1 of 281 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    19 functions had inline decision re-evaluated but remain unchanged
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   ComputerVision.vcxproj -> D:\Studium\Masterarbeit\Prototypes\ar-portal\C++Sources\Windows\ComputerVision\x64\Release\ComputerVision.dll

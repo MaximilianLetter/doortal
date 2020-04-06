@@ -66,21 +66,30 @@ extern "C"
                 continue;
 
             if (approx.size() == 4) {
-                ptr[0] = contours[i][0].x;
+                /*ptr[0] = contours[i][0].x;
                 ptr[1] = contours[i][0].y;
                 ptr[2] = contours[i][1].x;
                 ptr[3] = contours[i][1].y;
                 ptr[4] = contours[i][2].x;
                 ptr[5] = contours[i][2].y;
                 ptr[6] = contours[i][3].x;
-                ptr[7] = contours[i][3].y;
+                ptr[7] = contours[i][3].y;*/
+
+                ptr[0] = approx[0].x;
+                ptr[1] = approx[0].y;
+                ptr[2] = approx[1].x;
+                ptr[3] = approx[1].y;
+                ptr[4] = approx[2].x;
+                ptr[5] = approx[2].y;
+                ptr[6] = approx[3].x;
+                ptr[7] = approx[3].y;
 
                 cvtColor(edges, image, COLOR_GRAY2RGBA);
 
-                line(image, contours[i][0], contours[i][1], Scalar(0, 0, 255), 3);
-                line(image, contours[i][1], contours[i][2], Scalar(0, 0, 255), 3);
-                line(image, contours[i][2], contours[i][3], Scalar(0, 0, 255), 3);
-                line(image, contours[i][3], contours[i][0], Scalar(0, 0, 255), 3);
+                line(image, contours[i][0], contours[i][1], Scalar(0, 0, 255), 1);
+                line(image, contours[i][1], contours[i][2], Scalar(0, 0, 255), 1);
+                line(image, contours[i][2], contours[i][3], Scalar(0, 0, 255), 1);
+                line(image, contours[i][3], contours[i][0], Scalar(0, 0, 255), 1);
 
                 return true;
             }
