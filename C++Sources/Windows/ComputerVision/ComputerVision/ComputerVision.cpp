@@ -47,26 +47,14 @@ extern "C"
                 ptr[i+1] = points[i].y;
             }*/
 
-            /*ptr[0] = points[0].x;
+            ptr[0] = points[0].x;
             ptr[1] = points[0].y;
             ptr[2] = points[1].x;
             ptr[3] = points[1].y;
             ptr[4] = points[2].x;
             ptr[5] = points[2].y;
             ptr[6] = points[3].x;
-            ptr[7] = points[3].y;*/
-
-            ptr[0] = 50;
-            ptr[1] = 50;
-
-            ptr[2] = 100;
-            ptr[3] = 50;
-
-            ptr[4] = 100;
-            ptr[5] = 100;
-
-            ptr[6] = 50;
-            ptr[7] = 100;
+            ptr[7] = points[3].y;
         }
 
         // format has to be the same
