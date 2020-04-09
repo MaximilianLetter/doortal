@@ -86,10 +86,10 @@ extern "C"
 
                 cvtColor(edges, image, COLOR_GRAY2RGBA);
 
-                line(image, contours[i][0], contours[i][1], Scalar(0, 0, 255), 1);
-                line(image, contours[i][1], contours[i][2], Scalar(0, 0, 255), 1);
-                line(image, contours[i][2], contours[i][3], Scalar(0, 0, 255), 1);
-                line(image, contours[i][3], contours[i][0], Scalar(0, 0, 255), 1);
+                line(image, contours[i][0], contours[i][1], Scalar(0, 0, 255), 10);
+                line(image, contours[i][1], contours[i][2], Scalar(0, 0, 255), 10);
+                line(image, contours[i][2], contours[i][3], Scalar(0, 0, 255), 10);
+                line(image, contours[i][3], contours[i][0], Scalar(0, 0, 255), 10);
 
                 return true;
             }

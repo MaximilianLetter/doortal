@@ -40,7 +40,7 @@ public class CameraImageManipulation : MonoBehaviour
 #endif
 
     [DllImport(LIBRARY_NAME)]
-    private unsafe static extern bool ProcessImage(void* result, ref Color32[] rawImage, int width, int height);
+    private unsafe static extern bool ProcessImage(void* result, ref Color32[] rawImage, int width, int height, bool rotated);
 
     void OnEnable()
     {
@@ -49,20 +49,24 @@ public class CameraImageManipulation : MonoBehaviour
             rawImage = uiDisplay.GetComponent<RawImage>();
             uiManager = ui.GetComponent<UIManager>();
         }
-#if UNITY_EDITOR
-        Debug.Log("UNITY_EDITOR | WEBCAM_ENABLE");
-
-        webCam = new WebCamTexture();
 
         //nativeByteArray = new NativeArray<byte>(8, Allocator.Persistent);
         const int CORNERS = 4;
         nativeByteArray = new NativeArray<float>(CORNERS * 2, Allocator.Persistent);
         managedArray = new float[CORNERS * 2];
 
+#if UNITY_EDITOR
+        Debug.Log("UNITY_EDITOR | WEBCAM_ENABLE");
+
+        webCam = new WebCamTexture();
+
         rawImage.texture = webCam;
         //rawImage.material.mainTexture = webCam;
 
         webCam.Play();
+        Vector2 size = new Vector2(webCam.width, webCam.height);
+        uiDisplay.GetComponent<RectTransform>().sizeDelta = size;
+
 #elif UNITY_ANDROID
         if (cameraManager == null)
         {
@@ -77,11 +81,11 @@ public class CameraImageManipulation : MonoBehaviour
 
     void OnDisable()
     {
+        nativeByteArray.Dispose();
 #if UNITY_EDITOR
         Debug.Log("UNITY_EDITOR | WEBCAM_DISABLE");
         webCam.Stop();
 
-        nativeByteArray.Dispose();
 #elif UNITY_ANDROID
         // NOTE: documentation says 'cameraFrameReceived'
         cameraManager.frameReceived -= OnCameraFrameReceived;
@@ -106,7 +110,7 @@ public class CameraImageManipulation : MonoBehaviour
         void* ptr = NativeArrayUnsafeUtility.GetUnsafePtr(nativeByteArray);
 
         // if a rectangle was found
-        if (ProcessImage(ptr, ref pixels, webCam.width, webCam.height))
+        if (ProcessImage(ptr, ref pixels, webCam.width, webCam.height, false))
         {
             nativeByteArray.CopyTo(managedArray);
 
@@ -140,6 +144,9 @@ public class CameraImageManipulation : MonoBehaviour
         XRCameraImage image;
         if (!cameraManager.TryGetLatestImage(out image))
             return;
+
+        //Debug.Log(image.width);
+        //Debug.Log(image.height);
 
         // NOTE: documentation says 'CameraImageConversionParams'
         var conversionParams = new XRCameraImageConversionParams
@@ -181,14 +188,28 @@ public class CameraImageManipulation : MonoBehaviour
         );
 
         camTexture.LoadRawTextureData(buffer);
-        camTexture.Apply();
+        //camTexture.Apply();
 
         Color32[] rawPixels = camTexture.GetPixels32();
         //System.Array.Reverse(rawPixels);
 
-        // C++ call
-        Debug.Log("______PROCESS_IMAGE_________");
-        //ProcessImage(ref rawPixels, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y);
+        // Call to C++ Code
+        void* ptr = NativeArrayUnsafeUtility.GetUnsafePtr(nativeByteArray);
+
+        // if a rectangle was found
+        if (ProcessImage(ptr, ref rawPixels, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y, true))
+        {
+            nativeByteArray.CopyTo(managedArray);
+
+            uiManager.DrawIndicator(managedArray);
+        }
+        else
+        {
+            uiManager.ClearIndicator();
+        }
+
+        // Flip since the image from Android is rotated and camTexture was instantiated with wrong dimensions
+        //camTexture.Resize(conversionParams.outputDimensions.y, conversionParams.outputDimensions.x);
 
         camTexture.SetPixels32(rawPixels);
         camTexture.Apply();
