@@ -235,6 +235,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0ec0221931b2a44b897c2eca32539a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  objectToSpawn: {fileID: 8341794533027459622, guid: d62df6e6c96d7c64682717dfc036ec41,
+    type: 3}
   uiLineObject: {fileID: 2031973522}
 --- !u!1 &705507993
 GameObject:

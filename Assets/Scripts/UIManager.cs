@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Collections;
 using UnityEngine.UI.Extensions;
+using UnityEngine.XR.ARFoundation;
+using UnityEngine.XR.ARSubsystems;
 
 public class UIManager : MonoBehaviour
 {
+    public GameObject objectToSpawn;
     public GameObject uiLineObject;
     private UILineRenderer uiLineRenderer;
+    private ARRaycastManager rayManager;
 
     private bool active = true;
     private int activeCounter = 0;
@@ -16,12 +20,24 @@ public class UIManager : MonoBehaviour
     private float scaleUp;
     private float offset;
 
+    private Camera cam;
+
     // Start is called before the first frame update
     void Start()
     {
         uiLineRenderer = uiLineObject.GetComponent<UILineRenderer>();
+        rayManager = FindObjectOfType<ARRaycastManager>();
+        cam = Camera.main;
 
         CalcScaling();
+    }
+
+    private void Update()
+    {
+        if (Input.touchCount > 0 && Input.touches[0].phase == TouchPhase.Began)
+        {
+            PlaceARObject();
+        }
     }
 
     // Calculate the scaling and offset that has to be put on the points
@@ -77,15 +93,31 @@ public class UIManager : MonoBehaviour
 
         if (!active) return;
 
-        //Vector2[] clearArray = new Vector2[4];
-        //uiLineRenderer.Points = clearArray;
-
-        //uiLineRenderer.SetAllDirty();
-
         uiLineObject.SetActive(false);
 
         active = false;
 
         //Debug.Log("CLEARED");
+    }
+
+    public void PlaceARObject()
+    {
+        if (!active) return;
+
+        var points = uiLineRenderer.Points;
+
+        foreach (Vector2 point in points)
+        {
+            List<ARRaycastHit> hits = new List<ARRaycastHit>();
+            rayManager.Raycast(point, hits, TrackableType.Planes);
+
+            // Check hit on AR Plane
+            if (hits.Count > 0)
+            {
+                Instantiate(objectToSpawn, hits[0].pose.position, hits[0].pose.rotation);
+            }
+            //Vector3 pos = cam.ScreenToWorldPoint(new Vector3(point.x, point.y, cam.nearClipPlane));
+            //Instantiate(objectToSpawn, pos, Quaternion.identity);
+        }
     }
 }
