@@ -10,6 +10,8 @@ public class UIManager : MonoBehaviour
     private UILineRenderer uiLineRenderer;
 
     private bool active = true;
+    private int activeCounter = 0;
+    private const int COUNTER_THRESH = 2;
 
     private float scaleUp;
     private float offset;
@@ -40,6 +42,12 @@ public class UIManager : MonoBehaviour
 
     public void DrawIndicator(float[] arr)
     {
+        if (activeCounter < COUNTER_THRESH)
+        {
+            activeCounter++;
+            return;
+        }
+
         Vector2[] points = new Vector2[5];
         for (int i = 0; i < 4; i++)
         {
@@ -61,6 +69,12 @@ public class UIManager : MonoBehaviour
 
     public void ClearIndicator()
     {
+        if (activeCounter > 0)
+        {
+            activeCounter--;
+            return;
+        }
+
         if (!active) return;
 
         //Vector2[] clearArray = new Vector2[4];
