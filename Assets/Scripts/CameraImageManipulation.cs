@@ -25,7 +25,7 @@ public class CameraImageManipulation : MonoBehaviour
     public GameObject uiDisplay;
 
     private UIManager uiManager;
-    public GameObject ui;
+    public GameObject imageToWorld;
 
     // Array to catch OpenCV results
     //private NativeArray<byte> nativeByteArray;
@@ -47,7 +47,7 @@ public class CameraImageManipulation : MonoBehaviour
         if (rawImage == null)
         {
             rawImage = uiDisplay.GetComponent<RawImage>();
-            uiManager = ui.GetComponent<UIManager>();
+            uiManager = imageToWorld.GetComponent<UIManager>();
         }
 
         //nativeByteArray = new NativeArray<byte>(8, Allocator.Persistent);

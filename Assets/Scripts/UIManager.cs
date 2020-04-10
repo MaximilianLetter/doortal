@@ -6,6 +6,8 @@ using UnityEngine.UI.Extensions;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
+using System.Linq; // TODO what is this?
+
 public class UIManager : MonoBehaviour
 {
     public GameObject objectToSpawn;
@@ -106,18 +108,69 @@ public class UIManager : MonoBehaviour
 
         var points = uiLineRenderer.Points;
 
-        foreach (Vector2 point in points)
-        {
-            List<ARRaycastHit> hits = new List<ARRaycastHit>();
-            rayManager.Raycast(point, hits, TrackableType.Planes);
+        List<Vector2> pointList = new List<Vector2>(points);
 
-            // Check hit on AR Plane
-            if (hits.Count > 0)
-            {
-                Instantiate(objectToSpawn, hits[0].pose.position, hits[0].pose.rotation);
-            }
-            //Vector3 pos = cam.ScreenToWorldPoint(new Vector3(point.x, point.y, cam.nearClipPlane));
-            //Instantiate(objectToSpawn, pos, Quaternion.identity);
-        }
+        // The last point is equal to the first point and must be removed
+        pointList.RemoveAt(pointList.Count - 1);
+
+        //foreach (Vector2 point in points)
+        //{
+        //    List<ARRaycastHit> hits = new List<ARRaycastHit>();
+        //    rayManager.Raycast(point, hits, TrackableType.Planes);
+
+        //    // Check hit on AR Plane
+        //    if (hits.Count > 0)
+        //    {
+        //        Instantiate(objectToSpawn, hits[0].pose.position, hits[0].pose.rotation);
+        //    }
+        //    //Vector3 pos = cam.ScreenToWorldPoint(new Vector3(point.x, point.y, cam.nearClipPlane));
+        //    //Instantiate(objectToSpawn, pos, Quaternion.identity);
+        //}
+
+        // Order by y so top points and bottom points can be seperated
+        //pointList.Sort((a, b) => a.y.CompareTo(b.y));
+        pointList = pointList.OrderBy(point => point.y).ToList();
+
+        // Top points
+        var tp1 = pointList[2];
+        var tp2 = pointList[3];
+
+        // Bottom points
+        var bp1 = pointList[0];
+        var bp2 = pointList[1];
+
+        // Get distances and aspect ratio of 2D points
+        float width2D = Vector2.Distance(bp1, bp2);
+        float height2D = Vector2.Distance(tp1, bp1); // maybe better take top center point (perspective!)
+        float ratio2D = height2D / width2D;
+
+        // Build Vector3 Points of bottom points via raycast
+        List<ARRaycastHit> hits = new List<ARRaycastHit>();
+
+        rayManager.Raycast(bp1, hits, TrackableType.Planes);
+        if (hits.Count == 0) return;
+        var bp1_v3 = hits[0].pose.position;
+
+        rayManager.Raycast(bp2, hits, TrackableType.Planes);
+        if (hits.Count == 0) return;
+        var bp2_v3 = hits[0].pose.position;
+
+        // Get the point between the bottom ones
+        Vector3 bottomCenter = Vector3.Lerp(bp1_v3, bp2_v3, 0.5f);
+
+        // Calculate rotation
+        Quaternion groundRotation = hits[0].pose.rotation;
+        Vector3 direction = (bp1_v3 - bp2_v3).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(direction);
+        Quaternion rotation = lookRotation * Quaternion.Euler(0, 90.0f, 0);
+
+        // Get width and height for object
+        float width = Vector3.Distance(bp1_v3, bp2_v3);
+        float height = width * ratio2D;
+
+        // Spawn object
+        GameObject obj = Instantiate(objectToSpawn, bottomCenter, rotation);
+
+        obj.transform.localScale = new Vector3(width, height, 1);
     }
 }
