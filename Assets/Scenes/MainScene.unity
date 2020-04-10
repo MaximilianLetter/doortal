@@ -428,6 +428,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0ec0221931b2a44b897c2eca32539a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spawnTime: 0.1
   objectToSpawn: {fileID: 5393536777179297333, guid: 8e817a53af3bb51418c9c260976c135c,
     type: 3}
   uiLineObject: {fileID: 2031973522}
@@ -631,7 +632,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   uiDisplay: {fileID: 1614672832}
-  imageToWorld: {fileID: 930307223}
+  imageToWorldObject: {fileID: 930307223}
 --- !u!4 &1480666674
 Transform:
   m_ObjectHideFlags: 0

@@ -8,8 +8,10 @@ using UnityEngine.XR.ARSubsystems;
 
 using System.Linq; // TODO what is this?
 
-public class UIManager : MonoBehaviour
+public class ImageToWorld : MonoBehaviour
 {
+    public float spawnTime;
+
     public GameObject objectToSpawn;
     public GameObject uiLineObject;
     private UILineRenderer uiLineRenderer;
@@ -22,14 +24,11 @@ public class UIManager : MonoBehaviour
     private float scaleUp;
     private float offset;
 
-    private Camera cam;
-
     // Start is called before the first frame update
     void Start()
     {
         uiLineRenderer = uiLineObject.GetComponent<UILineRenderer>();
         rayManager = FindObjectOfType<ARRaycastManager>();
-        cam = Camera.main;
 
         CalcScaling();
     }
@@ -171,6 +170,26 @@ public class UIManager : MonoBehaviour
         // Spawn object
         GameObject obj = Instantiate(objectToSpawn, bottomCenter, rotation);
 
-        obj.transform.localScale = new Vector3(width, height, 1);
+        obj.transform.localScale = new Vector3(0.01f, 0.01f, 1);
+
+        StartCoroutine(ScaleOverTime(obj, spawnTime, width, height));
+    }
+
+    private IEnumerator ScaleOverTime(GameObject obj, float time, float width, float height)
+    {
+        Vector3 originalScale = obj.transform.localScale;
+        Vector3 destinationScale = new Vector3(width, height, 1.0f);
+
+        float currentTime = 0.0f;
+
+        do
+        {
+            obj.transform.localScale = Vector3.Lerp(originalScale, destinationScale, currentTime / time);
+            currentTime += Time.deltaTime;
+            yield return null;
+        } while (currentTime <= time);
+
+        // Make sure the endresult is the destination
+        obj.transform.localScale = destinationScale;
     }
 }

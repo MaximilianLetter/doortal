@@ -24,8 +24,8 @@ public class CameraImageManipulation : MonoBehaviour
     private RawImage rawImage;
     public GameObject uiDisplay;
 
-    private UIManager uiManager;
-    public GameObject imageToWorld;
+    private ImageToWorld imageToWorld;
+    public GameObject imageToWorldObject;
 
     // Array to catch OpenCV results
     //private NativeArray<byte> nativeByteArray;
@@ -47,7 +47,7 @@ public class CameraImageManipulation : MonoBehaviour
         if (rawImage == null)
         {
             rawImage = uiDisplay.GetComponent<RawImage>();
-            uiManager = imageToWorld.GetComponent<UIManager>();
+            imageToWorld = imageToWorldObject.GetComponent<ImageToWorld>();
         }
 
         //nativeByteArray = new NativeArray<byte>(8, Allocator.Persistent);
@@ -114,10 +114,10 @@ public class CameraImageManipulation : MonoBehaviour
         {
             nativeByteArray.CopyTo(managedArray);
 
-            uiManager.DrawIndicator(managedArray);
+            imageToWorld.DrawIndicator(managedArray);
         } else
         {
-            uiManager.ClearIndicator();
+            imageToWorld.ClearIndicator();
         }
 
         //for (int i = 0; i < nativeByteArray.Length; i += 2)
@@ -201,11 +201,11 @@ public class CameraImageManipulation : MonoBehaviour
         {
             nativeByteArray.CopyTo(managedArray);
 
-            uiManager.DrawIndicator(managedArray);
+            imageToWorld.DrawIndicator(managedArray);
         }
         else
         {
-            uiManager.ClearIndicator();
+            imageToWorld.ClearIndicator();
         }
 
         // Flip since the image from Android is rotated and camTexture was instantiated with wrong dimensions
