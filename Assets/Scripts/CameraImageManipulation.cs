@@ -155,7 +155,9 @@ public class CameraImageManipulation : MonoBehaviour
             inputRect = new RectInt(0, 0, image.width, image.height),
 
             // Downsample by 4
-            outputDimensions = new Vector2Int(image.width / 4, image.height / 4),
+            // 120p -> 0.25
+            // 180p -> 0.375
+            outputDimensions = new Vector2Int(Convert.ToInt32(image.width * 0.375), Convert.ToInt32(image.height * 0.375)),
 
             // Choose RGBA format
             outputFormat = TextureFormat.RGBA32,
@@ -207,13 +209,6 @@ public class CameraImageManipulation : MonoBehaviour
         {
             imageToWorld.ClearIndicator();
         }
-
-        // Flip since the image from Android is rotated and camTexture was instantiated with wrong dimensions
-        //camTexture.Resize(conversionParams.outputDimensions.y, conversionParams.outputDimensions.x);
-
-        camTexture.SetPixels32(rawPixels);
-        camTexture.Apply();
-        rawImage.texture = camTexture;
 
         // Done with our temporary data
         buffer.Dispose();

@@ -49,7 +49,9 @@ public class ImageToWorld : MonoBehaviour
         Vector2 input = new Vector2(640, 480);
 
         // NOTE: The cam image was downsampled for processing by 4
-        input *= 0.25f;
+        // 120p -> 0.25f
+        // 180p -> 0.375f
+        input *= 0.375f;
 
         // NOTE: Height is the defining factor since aspect ratios are different
         scaleUp = goal.x / input.x;
