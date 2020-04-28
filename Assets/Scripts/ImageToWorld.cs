@@ -17,9 +17,15 @@ public class ImageToWorld : MonoBehaviour
     private UILineRenderer uiLineRenderer;
     private ARRaycastManager rayManager;
 
-    private bool active = true;
-    private int activeCounter = 0;
+
+    private const int resolution = 1080; // END resolution
+    private const float DIFF_THRESH = resolution / 20;
+    private const float DIFF_THRESH_CANCEL = DIFF_THRESH * 2;
+
+    private bool readyToPlace = false;
     private const int COUNTER_THRESH = 2;
+    private List<Vector2> previousDoor = new List<Vector2>();
+    private int prevCounter = 0;
 
     private float scaleUp;
     private float offset;
@@ -59,53 +65,121 @@ public class ImageToWorld : MonoBehaviour
         offset = -((input.y * scaleUp) - goal.y) / 2;
     }
 
-    public void DrawIndicator(float[] arr)
+    public void ShowIndicator(bool foundNew, float[] arr)
     {
-        if (activeCounter < COUNTER_THRESH)
+        if (foundNew)
         {
-            activeCounter++;
-            return;
+            // Convert newly found point values to a list of 2D points
+            List<Vector2> door = new List<Vector2>();
+            for (int i = 0; i < 4; i++)
+            {
+                Vector2 point = new Vector2((arr[i * 2] * scaleUp) + offset, arr[i * 2 + 1] * scaleUp);
+                door.Add(point);
+            }
+            door.Add(new Vector2((arr[0] * scaleUp) + offset, arr[1] * scaleUp));
+
+            // Check if the found door is similar to the previous found door,
+            // if it is, replace the old one and draw the new
+            bool match = CheckDifferences(door);
+            if (match)
+            {
+                uiLineRenderer.Points = door.ToArray();
+                previousDoor = door;
+                prevCounter = 0;
+
+                readyToPlace = true;
+                uiLineObject.SetActive(true);
+            }
+            else
+            {
+                if (previousDoor.Count > 0)
+                {
+                    // If it is not, draw the old door until it is drawn too often
+                    uiLineRenderer.Points = previousDoor.ToArray();
+
+                    prevCounter += 1;
+                    if (prevCounter > 2)
+                    {
+                        previousDoor = new List<Vector2>();
+                        prevCounter = 0;
+
+                        readyToPlace = false;
+                        uiLineObject.SetActive(false);
+                    }
+                }
+                else
+                {
+                    previousDoor = door;
+                    prevCounter = 0;
+                }
+            }
         }
-
-        Vector2[] points = new Vector2[5];
-        for (int i = 0; i < 4; i++)
+        else
         {
-            Vector2 point = new Vector2( (arr[i*2] * scaleUp) + offset, arr[i*2 + 1] * scaleUp );
-            points[i] = point;
-        }
+            // No door was found but the previous could still be
+            // a good result to show
+            if (previousDoor.Count > 0)
+            {
+                uiLineRenderer.Points = previousDoor.ToArray();
 
-        points[4] = new Vector2( (arr[0] * scaleUp) + offset, arr[1] * scaleUp );
-        uiLineRenderer.Points = points;
+                // If the previous door was shown too many frames without new find,
+                // abort it and reset to empty List
+                prevCounter += 1;
+                if (prevCounter > 2)
+                {
+                    previousDoor = new List<Vector2>();
+                    prevCounter = 0;
 
-        if (!active)
-        {
-            uiLineObject.SetActive(true);
-            active = true;
-
-            //Debug.Log("SET_ACTIVE");
+                    readyToPlace = false;
+                    uiLineObject.SetActive(false);
+                }
+            }
         }
     }
 
-    public void ClearIndicator()
+    private bool CheckDifferences(List<Vector2> newDoor)
     {
-        if (activeCounter > 0)
+        int diffCounter = 0;
+
+        if (previousDoor.Count == 0)
         {
-            activeCounter--;
-            return;
+            return false;
         }
 
-        if (!active) return;
+        for (int i = 0; i < 4; i++)
+        {
+            float difference = Vector2.Distance(previousDoor[i], newDoor[i]);
 
-        uiLineObject.SetActive(false);
+            if (difference > DIFF_THRESH)
+            {
+                diffCounter += 1;
 
-        active = false;
+                if (difference > DIFF_THRESH_CANCEL)
+                {
+                    return false;
+                }
+            }
+        }
 
-        //Debug.Log("CLEARED");
+        if (diffCounter > 2)
+        {
+            prevCounter += 1;
+
+            if (prevCounter > COUNTER_THRESH)
+            {
+                previousDoor = new List<Vector2>();
+                prevCounter = 0;
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     public void PlaceARObject()
     {
-        if (!active) return;
+        if (!readyToPlace) return;
 
         var points = uiLineRenderer.Points;
 

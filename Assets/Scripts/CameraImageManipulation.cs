@@ -114,10 +114,10 @@ public class CameraImageManipulation : MonoBehaviour
         {
             nativeByteArray.CopyTo(managedArray);
 
-            imageToWorld.DrawIndicator(managedArray);
+            imageToWorld.ShowIndicator(true, managedArray);
         } else
         {
-            imageToWorld.ClearIndicator();
+            imageToWorld.ShowIndicator(false, null);
         }
 
         //for (int i = 0; i < nativeByteArray.Length; i += 2)
@@ -199,15 +199,17 @@ public class CameraImageManipulation : MonoBehaviour
         void* ptr = NativeArrayUnsafeUtility.GetUnsafePtr(nativeByteArray);
 
         // if a rectangle was found
-        if (ProcessImage(ptr, ref rawPixels, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y, true))
+        bool success = ProcessImage(ptr, ref rawPixels, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y, true);
+        
+        if (success)
         {
             nativeByteArray.CopyTo(managedArray);
 
-            imageToWorld.DrawIndicator(managedArray);
+            imageToWorld.ShowIndicator(true, managedArray);
         }
         else
         {
-            imageToWorld.ClearIndicator();
+            imageToWorld.ShowIndicator(false, null);
         }
 
         // Done with our temporary data

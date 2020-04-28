@@ -20,7 +20,7 @@ using namespace std;
 // Declare all used constants
 const int RES = 180;
 
-const float CONTRAST = 1.5;
+const float CONTRAST = 1.2;
 
 // Blur constants
 const Size BLUR_KERNEL = Size(3, 3);
@@ -32,10 +32,11 @@ const int CANNY_UPPER = 200;
 
 // NOTE: these values need to be improved to ensure to always find the corners of a door
 // Corner detection constants
-const int CORNERS_MAX = 40;
-const float CORNERS_QUALITY = 0.05;
-const float CORNERS_MIN_DIST = 10.0;
+const int CORNERS_MAX = 50;
+const float CORNERS_QUALITY = 0.02;
+const float CORNERS_MIN_DIST = 15.0;
 const int CORNERS_MASK_OFFSET = 10;
+const bool CORNERS_HARRIS = true;
 
 // Vertical lines constants
 const float LINE_MAX = 0.85;
@@ -43,7 +44,7 @@ const float LINE_MIN = 0.3;
 const float LINE_ANGLE_MIN = 0.875; // RAD
 
 // Rectangles constants
-const float ANGLE_MAX = 0.175; // RAD
+const float ANGLE_MAX = 0.15; // RAD
 const float LENGTH_DIFF_MAX = 0.15;
 const float ASPECT_RATIO_MIN = 0.35;
 const float ASPECT_RATIO_MAX = 0.7;
@@ -106,7 +107,7 @@ bool detect(Mat& image, vector<Point2f>& result)
     Rect rect = Rect(CORNERS_MASK_OFFSET, CORNERS_MASK_OFFSET, image.size().width - CORNERS_MASK_OFFSET, image.size().height - CORNERS_MASK_OFFSET);
     mask(rect) = 1;
 
-    goodFeaturesToTrack(blurred, corners, CORNERS_MAX, CORNERS_QUALITY, CORNERS_MIN_DIST, mask);
+    goodFeaturesToTrack(blurred, corners, CORNERS_MAX, CORNERS_QUALITY, CORNERS_MIN_DIST, mask, 3, CORNERS_HARRIS);
 
     // Connect corners to vertical lines
     vector<vector<Point2f>> lines = cornersToVertLines(corners, int(RES * ratio));
@@ -310,10 +311,10 @@ vector<Point2f> selectBestCandidate(vector<vector<Point2f>> candidates, vector<f
     for (int i = 0; i < candidates.size(); i++)
     {
         // Test in inner content has a different color average
-        int left = (candidates[i][0].x + candidates[i][1].x) / 2;
-        int top = (candidates[i][1].y + candidates[i][2].y) / 2;
-        int right = (candidates[i][2].x + candidates[i][3].x) / 2;
-        int bottom = (candidates[i][3].y + candidates[i][0].y) / 2;
+        int left = int((candidates[i][0].x + candidates[i][1].x) / 2);
+        int top = int((candidates[i][1].y + candidates[i][2].y) / 2);
+        int right = int((candidates[i][2].x + candidates[i][3].x) / 2);
+        int bottom = int((candidates[i][3].y + candidates[i][0].y) / 2);
 
         // This whole process of masking the image seems like a workaround
         Rect rect = Rect(Point2i(left, bottom), Point2i(right, top));
