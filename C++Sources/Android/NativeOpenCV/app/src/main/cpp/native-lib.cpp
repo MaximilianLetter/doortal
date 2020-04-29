@@ -20,7 +20,7 @@ using namespace std;
 // Declare all used constants
 const int RES = 180;
 
-const float CONTRAST = 1.2;
+const float CONTRAST = 1.1;
 
 // Blur constants
 const Size BLUR_KERNEL = Size(3, 3);
@@ -33,7 +33,7 @@ const int CANNY_UPPER = 200;
 // NOTE: these values need to be improved to ensure to always find the corners of a door
 // Corner detection constants
 const int CORNERS_MAX = 50;
-const float CORNERS_QUALITY = 0.02;
+const float CORNERS_QUALITY = 0.01;
 const float CORNERS_MIN_DIST = 15.0;
 const int CORNERS_MASK_OFFSET = 10;
 const bool CORNERS_HARRIS = true;
@@ -44,11 +44,11 @@ const float LINE_MIN = 0.3;
 const float LINE_ANGLE_MIN = 0.875; // RAD
 
 // Rectangles constants
-const float ANGLE_MAX = 0.15; // RAD
-const float LENGTH_DIFF_MAX = 0.15;
-const float ASPECT_RATIO_MIN = 0.35;
+const float ANGLE_MAX = 0.175; // RAD
+const float LENGTH_DIFF_MAX = 0.12;
+const float ASPECT_RATIO_MIN = 0.3;
 const float ASPECT_RATIO_MAX = 0.7;
-const float LENGTH_HOR_DIFF_MAX = 1.1;
+const float LENGTH_HOR_DIFF_MAX = 1.2;
 const float LENGTH_HOR_DIFF_MIN = 0.7;
 
 // Comparison of rectangles to edges constants
@@ -59,7 +59,7 @@ const float BOT_LINE_BONUS = 0.25;
 
 // Selection of best candidate constants
 const float UPVOTE_FACTOR = 1.2;
-const float DOOR_IN_DOOR_DIFF_THRESH = 12.0; // Devider of image height
+const float DOOR_IN_DOOR_DIFF_THRESH = 18.0; // Divider of image height
 const float COLOR_DIFF_THRESH = 50.0;
 const float ANGLE_DEVIATION_THRESH = 10.0;
 
@@ -212,11 +212,11 @@ vector<vector<Point2f>> vertLinesToRectangles(vector<vector<Point2f>> lines)
             // maybe store them for reusage
             // Check if length difference of lines is close
             float length1 = getDistance(lines[i][0], lines[i][1]);
-            float length2 = getDistance(lines[i][0], lines[i][1]);
+            float length2 = getDistance(lines[j][0], lines[j][1]);
             float lengthDiff = abs(length1 - length2);
             float lengthAvg = (length1 + length2) / 2;
 
-            if ((lengthDiff > (lengthAvg * LENGTH_DIFF_MAX)))
+            if (lengthDiff > (lengthAvg * LENGTH_DIFF_MAX))
             {
                 continue;
             }
@@ -390,7 +390,7 @@ float getOrientation(Point2f p1, Point2f p2)
 {
     if (p1.x != p2.x)
     {
-        return (2 / M_PI) * atan(abs(p1.y - p2.y) / abs(p1.x - p2.x));
+        return abs((2 / M_PI) * atan(abs(p1.y - p2.y) / abs(p1.x - p2.x)));
     }
     else
     {
@@ -405,7 +405,7 @@ float getCornerAngle(Point2f p1, Point2f p2, Point2f p3)
     Point2f p32 = p3 - p2;
 
     float angle = p12.dot(p32) / (norm(p12) * norm(p32));
-    angle = acos(angle) * 180 / M_PI;
+    angle = abs(acos(angle) * 180 / M_PI);
 
     return angle;
 }
