@@ -6,7 +6,8 @@ public class PortalManager : MonoBehaviour
 {
     public GameObject objectToSpawn;
 
-    public const float spawnTime = 0.2f;
+    public float spawnTime;
+    public float replacementDistance;
 
     private GameObject activePortal;
 
@@ -25,7 +26,23 @@ public class PortalManager : MonoBehaviour
         }
         else
         {
-            ReplacePortal(position, rotation, width, height);
+            float distance = Vector2.Distance(activePortal.transform.position, position);
+            if (distance <= replacementDistance)
+            {
+                ReplacePortal(position, rotation, width, height);
+            }
+            else
+            {
+                Destroy(activePortal);
+
+                GameObject obj = Instantiate(objectToSpawn, position, rotation);
+
+                obj.transform.localScale = new Vector3(0.01f, 0.01f, 1);
+
+                StartCoroutine(ScaleOverTime(obj, spawnTime, width, height));
+
+                activePortal = obj;
+            }
         }
     }
 
