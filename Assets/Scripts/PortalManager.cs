@@ -15,13 +15,27 @@ public class PortalManager : MonoBehaviour
     public Material[] materials;
 
     private GameObject activePortal;
+    private bool inside = false;
 
     private void Start()
     {
         SetMaterials(false);
     }
 
-    public void SetMaterials(bool fullRender)
+    // Hack for editor because of missing reset after play mode
+    void OnDestroy()
+    {
+        SetMaterials(false);
+    }
+
+    // Function called from portals script when triggering walk through
+    public void EnterPortal()
+    {
+        inside = !inside;
+        SetMaterials(inside);
+    }
+
+    private void SetMaterials(bool fullRender)
     {
         var stencilTest = fullRender ? CompareFunction.NotEqual : CompareFunction.Equal;
 
@@ -46,7 +60,7 @@ public class PortalManager : MonoBehaviour
         }
         else
         {
-            float distance = Vector2.Distance(activePortal.transform.position, position);
+            float distance = Vector3.Distance(activePortal.transform.position, position);
             if (distance <= replacementDistance)
             {
                 ReplacePortal(position, rotation, width, height);
@@ -55,7 +69,6 @@ public class PortalManager : MonoBehaviour
             {
                 Destroy(activePortal);
                 activePortal = null; // Immidiate reset for recursive function call
-
                 // Rerun the function to create a new portal
                 SpawnObject(position, rotation, width, height);
             }
@@ -93,8 +106,11 @@ public class PortalManager : MonoBehaviour
 
         if (destroy)
         {
-            // Since only the portal window is scaled, the whole portal object needs to be destroyed
-            Destroy(activePortal);
+            // Since only the portal window is scaled, the parent object needs to be destroyed
+            Destroy(obj.transform.parent.gameObject);
+            // Reset the scene to start
+            SetMaterials(false);
+            inside = false;
         }
     }
 

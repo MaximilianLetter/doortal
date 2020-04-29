@@ -10,7 +10,6 @@ public class EnterPortal : MonoBehaviour
 
     // wasInFront logic should not be necessary for doorway interaction
     bool wasInFront;
-    bool inside;
 
     bool hasCollided;
 
@@ -55,16 +54,9 @@ public class EnterPortal : MonoBehaviour
 
         if ((isInFront && !wasInFront) || (wasInFront && !isInFront))
         {
-            inside = !inside;
-            portalManager.SetMaterials(inside);
+            portalManager.EnterPortal();
         }
         wasInFront = isInFront;
-    }
-
-    // Hack for editor because of missing reset after play mode
-    void OnDestroy()
-    {
-        portalManager.SetMaterials(false);
     }
 
     private void Update()
