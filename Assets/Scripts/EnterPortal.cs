@@ -18,6 +18,7 @@ public class EnterPortal : MonoBehaviour
     // Hack for editor setup
     void Start()
     {
+        // Reset materials, can be a problem with creating a portal after the first one
         device = GameObject.FindWithTag("MainCamera").transform;
         SetMaterials(false);
     }
@@ -76,7 +77,7 @@ public class EnterPortal : MonoBehaviour
     // Hack for editor because of missing reset after play mode
     void OnDestroy()
     {
-        SetMaterials(true);
+        SetMaterials(false);
     }
 
     private void Update()
