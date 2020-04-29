@@ -13,18 +13,16 @@ public class PortalManager : MonoBehaviour
 
     public void SpawnObject(Vector3 position, Quaternion rotation, float width, float height)
     {
-        // If no portal exists
         if (activePortal == null)
         {
-            Vector3 startPosition = new Vector3(position.x, position.y + height / 2, position.z);
-            Vector3 destinationScale = new Vector3(width, height, 1);
-            GameObject obj = Instantiate(objectToSpawn, startPosition, rotation);
-
-            obj.transform.localScale = new Vector3(0.01f, 0.01f, 1);
-
-            StartCoroutine(CreationOverTime(obj, spawnTime ,destinationScale, position));
-
+            GameObject obj = Instantiate(objectToSpawn, position, rotation);
             activePortal = obj;
+
+            // Only scale up the portal window, so child objects are not stretched
+            GameObject portalWindow = activePortal.transform.Find("PortalWindow").gameObject;
+            Vector3 scale = new Vector3(width, height, 1);
+
+            StartCoroutine(ScaleOverTime(portalWindow, spawnTime, scale));
         }
         else
         {
@@ -36,43 +34,47 @@ public class PortalManager : MonoBehaviour
             else
             {
                 Destroy(activePortal);
+                activePortal = null; // Immidiate reset for recursive function call
 
-                // This is a copy of above and could be outsourced
-                Vector3 startPosition = new Vector3(position.x, position.y + height / 2, position.z);
-                Vector3 destinationScale = new Vector3(width, height, 1);
-                GameObject obj = Instantiate(objectToSpawn, startPosition, rotation);
-
-                obj.transform.localScale = new Vector3(0.01f, 0.01f, 1);
-
-                StartCoroutine(CreationOverTime(obj, spawnTime, destinationScale, position));
-
-                activePortal = obj;
+                // Rerun the function to create a new portal
+                SpawnObject(position, rotation, width, height);
             }
         }
     }
 
-    private IEnumerator CreationOverTime(GameObject obj, float time, Vector3 scale, Vector3 position, bool destroy = false)
+    private IEnumerator ScaleOverTime(GameObject obj, float time, Vector3 scale)
     {
-        Vector3 originalScale = obj.transform.localScale;
-        Vector3 originalPosition = obj.transform.position;
+        bool destroy = (scale == Vector3.zero);
+
+        Vector3 originalScale;
+
+        if (!destroy)
+        {
+            obj.transform.localPosition = new Vector3(0, scale.y / 2, 0);
+
+            originalScale = Vector3.zero;
+        }
+        else
+        {
+            originalScale = obj.transform.localScale;
+        }
 
         float currentTime = 0.0f;
 
         do
         {
             obj.transform.localScale = Vector3.Lerp(originalScale, scale, currentTime / time);
-            obj.transform.position = Vector3.Lerp(originalPosition, position, currentTime / time);
             currentTime += Time.deltaTime;
             yield return null;
         } while (currentTime <= time);
 
         // Make sure the endresult is the destination
         obj.transform.localScale = scale;
-        obj.transform.position = position;
 
         if (destroy)
         {
-            Destroy(obj);
+            // Since only the portal window is scaled, the whole portal object needs to be destroyed
+            Destroy(activePortal);
         }
     }
 
@@ -80,18 +82,16 @@ public class PortalManager : MonoBehaviour
     {
         if (activePortal == null) return;
 
-        Vector3 destinationScale = new Vector3(0.01f, 0.01f, 1);
+        GameObject portalWindow = activePortal.transform.Find("PortalWindow").gameObject;
 
-        Vector3 position = activePortal.transform.position;
-        float height = activePortal.transform.localScale.y;
-        Vector3 destinationPosition = new Vector3(position.x, position.y + (height / 2), position.z);
-
-        StartCoroutine(CreationOverTime(activePortal, spawnTime, destinationScale, destinationPosition, true));
+        StartCoroutine(ScaleOverTime(portalWindow, spawnTime, Vector3.zero));
     }
 
     private void ReplacePortal(Vector3 position, Quaternion rotation, float width, float height)
     {
         activePortal.transform.SetPositionAndRotation(position, rotation);
-        activePortal.transform.localScale = new Vector3(width, height, 1);
+
+        GameObject portalWindow = activePortal.transform.Find("PortalWindow").gameObject;
+        portalWindow.transform.localScale = new Vector3(width, height, 1);
     }
 }
