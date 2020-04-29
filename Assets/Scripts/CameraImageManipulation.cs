@@ -17,57 +17,31 @@ public class CameraImageManipulation : MonoBehaviour
     private ARCameraManager cameraManager;
     private Texture2D camTexture;
 
-    // WebCam Setup
-    private WebCamTexture webCam;
-
-    // UI to display on
-    private RawImage rawImage;
-    public GameObject uiDisplay;
-
     private ImageToWorld imageToWorld;
     public GameObject imageToWorldObject;
 
     // Array to catch OpenCV results
-    //private NativeArray<byte> nativeByteArray;
-    private NativeArray<float> nativeByteArray;
+    private const int CORNERS = 4;
+    private NativeArray<float> nativeFloatArray;
     private float[] managedArray;
 
-    // NOTE: UNITY_ANDROID is always active since its the build platform
-#if UNITY_EDITOR
-    private const string LIBRARY_NAME = "ComputerVision";
-#elif UNITY_ANDROID
+    // Import native C++ library
     private const string LIBRARY_NAME = "native-lib";
-#endif
 
     [DllImport(LIBRARY_NAME)]
     private unsafe static extern bool ProcessImage(void* result, ref Color32[] rawImage, int width, int height, bool rotated);
 
     void OnEnable()
     {
-        if (rawImage == null)
-        {
-            rawImage = uiDisplay.GetComponent<RawImage>();
-            imageToWorld = imageToWorldObject.GetComponent<ImageToWorld>();
-        }
+        imageToWorld = imageToWorldObject.GetComponent<ImageToWorld>();
 
-        //nativeByteArray = new NativeArray<byte>(8, Allocator.Persistent);
-        const int CORNERS = 4;
-        nativeByteArray = new NativeArray<float>(CORNERS * 2, Allocator.Persistent);
+        // Setup result arrays
+        // NativeArray  -> modified in C++
+        // ManagedArray -> receives values from native
+        nativeFloatArray = new NativeArray<float>(CORNERS * 2, Allocator.Persistent);
         managedArray = new float[CORNERS * 2];
 
-#if UNITY_EDITOR
-        Debug.Log("UNITY_EDITOR | WEBCAM_ENABLE");
-
-        webCam = new WebCamTexture();
-
-        rawImage.texture = webCam;
-        //rawImage.material.mainTexture = webCam;
-
-        webCam.Play();
-        Vector2 size = new Vector2(webCam.width, webCam.height);
-        uiDisplay.GetComponent<RectTransform>().sizeDelta = size;
-
-#elif UNITY_ANDROID
+        // Setup camera
         if (cameraManager == null)
         {
             GameObject cam = GameObject.FindGameObjectWithTag("MainCamera");
@@ -76,66 +50,15 @@ public class CameraImageManipulation : MonoBehaviour
 
         // NOTE: documentation says 'cameraFrameReceived'
         cameraManager.frameReceived += OnCameraFrameReceived;
-#endif
     }
 
     void OnDisable()
     {
-        nativeByteArray.Dispose();
-#if UNITY_EDITOR
-        Debug.Log("UNITY_EDITOR | WEBCAM_DISABLE");
-        webCam.Stop();
+        // Release allocated memory
+        nativeFloatArray.Dispose();
 
-#elif UNITY_ANDROID
         // NOTE: documentation says 'cameraFrameReceived'
         cameraManager.frameReceived -= OnCameraFrameReceived;
-#endif
-    }
-
-#if UNITY_EDITOR
-    void Update()
-    {
-        if (webCam.isPlaying)
-        {
-            OnWebcamFrameReceived();
-        }
-    }
-#endif
-
-    unsafe void OnWebcamFrameReceived()
-    {
-        var pixels = webCam.GetPixels32();
-
-        // Call to C++ Code
-        void* ptr = NativeArrayUnsafeUtility.GetUnsafePtr(nativeByteArray);
-
-        // if a rectangle was found
-        if (ProcessImage(ptr, ref pixels, webCam.width, webCam.height, false))
-        {
-            nativeByteArray.CopyTo(managedArray);
-
-            imageToWorld.ShowIndicator(true, managedArray);
-        } else
-        {
-            imageToWorld.ShowIndicator(false, null);
-        }
-
-        //for (int i = 0; i < nativeByteArray.Length; i += 2)
-        //{
-        //    if (i == 0) Debug.Log("______");
-        //    Debug.Log(nativeByteArray[i]);
-        //    Debug.Log(nativeByteArray[i+1]);
-        //}
-
-        camTexture = new Texture2D(
-            webCam.width,
-            webCam.height
-        );
-
-        camTexture.SetPixels32(pixels);
-        camTexture.Apply();
-
-        rawImage.texture = camTexture;
     }
 
     unsafe void OnCameraFrameReceived(ARCameraFrameEventArgs eventArgs)
@@ -145,27 +68,24 @@ public class CameraImageManipulation : MonoBehaviour
         if (!cameraManager.TryGetLatestImage(out image))
             return;
 
-        //Debug.Log(image.width);
-        //Debug.Log(image.height);
-
         // NOTE: documentation says 'CameraImageConversionParams'
         var conversionParams = new XRCameraImageConversionParams
         {
             // Get the entire image
             inputRect = new RectInt(0, 0, image.width, image.height),
 
-            // Downsample by 4
+            // Downsample the image
             // 120p -> 0.25
             // 180p -> 0.375
             outputDimensions = new Vector2Int(Convert.ToInt32(image.width * 0.375), Convert.ToInt32(image.height * 0.375)),
 
-            // Choose RGBA format
+            // NOTE: directly converting into single channel could be an option,
+            // but it is not sure that R8 represents grayscale in one channel
+            // Choose image format
             outputFormat = TextureFormat.RGBA32,
-            //outputFormat = TextureFormat.R8,
 
             // Flip across the vertical axis (mirror image)
-            //transformation = CameraImageTransformation.MirrorY
-            transformation = CameraImageTransformation.None
+            transformation = CameraImageTransformation.MirrorY
         };
 
         // See how many bytes we need to store the final image.
@@ -190,20 +110,18 @@ public class CameraImageManipulation : MonoBehaviour
         );
 
         camTexture.LoadRawTextureData(buffer);
-        //camTexture.Apply();
 
         Color32[] rawPixels = camTexture.GetPixels32();
-        //System.Array.Reverse(rawPixels);
+
+        // Get pointer to nativeArray
+        void* ptr = NativeArrayUnsafeUtility.GetUnsafePtr(nativeFloatArray);
 
         // Call to C++ Code
-        void* ptr = NativeArrayUnsafeUtility.GetUnsafePtr(nativeByteArray);
-
-        // if a rectangle was found
         bool success = ProcessImage(ptr, ref rawPixels, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y, true);
         
         if (success)
         {
-            nativeByteArray.CopyTo(managedArray);
+            nativeFloatArray.CopyTo(managedArray);
 
             imageToWorld.ShowIndicator(true, managedArray);
         }

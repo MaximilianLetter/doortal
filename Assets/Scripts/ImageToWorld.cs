@@ -17,21 +17,21 @@ public class ImageToWorld : MonoBehaviour
     private UILineRenderer uiLineRenderer;
     private ARRaycastManager rayManager;
 
-
+    // These values are not used but could be if a stricter smoothing algorithm is implemented
     private const int resolution = 1080; // END resolution
     private const float DIFF_THRESH = resolution / 20;
     private const float DIFF_THRESH_CANCEL = DIFF_THRESH * 2;
-
-    private bool readyToPlace = false;
     private const int COUNTER_THRESH = 2;
     private List<Vector2> previousDoor = new List<Vector2>();
     private int prevCounter = 0;
+
+    private bool readyToPlace = false;
     private bool showLines = false;
+    private bool holdLines = false;
 
     private float scaleUp;
     private float offset;
 
-    // Start is called before the first frame update
     void Start()
     {
         uiLineRenderer = uiLineObject.GetComponent<UILineRenderer>();
@@ -55,7 +55,7 @@ public class ImageToWorld : MonoBehaviour
         Vector2 goal = new Vector2(Screen.height, Screen.width);
         Vector2 input = new Vector2(640, 480);
 
-        // NOTE: The cam image was downsampled for processing by 4
+        // NOTE: The cam image was downsampled for processing
         // 120p -> 0.25f
         // 180p -> 0.375f
         input *= 0.375f;
@@ -70,12 +70,15 @@ public class ImageToWorld : MonoBehaviour
     {
         if (foundNew)
         {
+            // To reduce flickering, dismiss the first result
             if (!showLines)
             {
                 showLines = true;
+                holdLines = true;
             }
             else
             {
+                // Convert the result array to a Vector2 List
                 List<Vector2> door = new List<Vector2>();
                 for (int i = 0; i < 4; i++)
                 {
@@ -86,92 +89,37 @@ public class ImageToWorld : MonoBehaviour
 
                 uiLineRenderer.Points = door.ToArray();
 
+                // If inactive, activate the line renderer and prepare to place an object
                 if (!uiLineObject.activeSelf)
                 {
                     uiLineObject.SetActive(true);
                     readyToPlace = true;
                 }
             }
-            //// Convert newly found point values to a list of 2D points
-            //List<Vector2> door = new List<Vector2>();
-            //for (int i = 0; i < 4; i++)
-            //{
-            //    Vector2 point = new Vector2((arr[i * 2] * scaleUp) + offset, arr[i * 2 + 1] * scaleUp);
-            //    door.Add(point);
-            //}
-            //door.Add(new Vector2((arr[0] * scaleUp) + offset, arr[1] * scaleUp));
-
-            //// Check if the found door is similar to the previous found door,
-            //// if it is, replace the old one and draw the new
-            //bool match = CheckDifferences(door);
-            //if (match)
-            //{
-            //    uiLineRenderer.Points = door.ToArray();
-            //    previousDoor = door;
-            //    prevCounter = 0;
-
-            //    readyToPlace = true;
-            //    uiLineObject.SetActive(true);
-            //}
-            //else
-            //{
-            //    if (previousDoor.Count > 0)
-            //    {
-            //        // If it is not, draw the old door until it is drawn too often
-            //        uiLineRenderer.Points = previousDoor.ToArray();
-
-            //        prevCounter += 1;
-            //        if (prevCounter > 2)
-            //        {
-            //            previousDoor = new List<Vector2>();
-            //            prevCounter = 0;
-
-            //            readyToPlace = false;
-            //            uiLineObject.SetActive(false);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        previousDoor = door;
-            //        prevCounter = 0;
-            //    }
-            //}
         }
         else
         {
-            if (showLines)
+            // If the previous input was positive hold it for a frame
+            if (holdLines)
             {
-                showLines = false;
+                holdLines = false;
             }
             else
             {
+                // If no new positive input appears, reset everything
+                showLines = false;
+
                 if (uiLineObject.activeSelf)
                 {
                     uiLineObject.SetActive(false);
-                    readyToPlace = true;
+                    readyToPlace = false;
                 }
             }
-            //// No door was found but the previous could still be
-            //// a good result to show
-            //if (previousDoor.Count > 0)
-            //{
-            //    uiLineRenderer.Points = previousDoor.ToArray();
-
-            //    // If the previous door was shown too many frames without new find,
-            //    // abort it and reset to empty List
-            //    prevCounter += 1;
-            //    if (prevCounter > 2)
-            //    {
-            //        previousDoor = new List<Vector2>();
-            //        prevCounter = 0;
-
-            //        readyToPlace = false;
-            //        uiLineObject.SetActive(false);
-            //    }
-            //}
         }
     }
 
+    // NOTE: this function is not used but can be for a better smoothing
+    // Test how many differences a proposed door has to the previous door
     private bool CheckDifferences(List<Vector2> newDoor)
     {
         int diffCounter = 0;
@@ -212,6 +160,7 @@ public class ImageToWorld : MonoBehaviour
         return true;
     }
 
+    // Place the object based on the current proposed door
     public void PlaceARObject()
     {
         if (!readyToPlace) return;
@@ -223,31 +172,17 @@ public class ImageToWorld : MonoBehaviour
         // The last point is equal to the first point and must be removed
         pointList.RemoveAt(pointList.Count - 1);
 
-        //foreach (Vector2 point in points)
-        //{
-        //    List<ARRaycastHit> hits = new List<ARRaycastHit>();
-        //    rayManager.Raycast(point, hits, TrackableType.Planes);
-
-        //    // Check hit on AR Plane
-        //    if (hits.Count > 0)
-        //    {
-        //        Instantiate(objectToSpawn, hits[0].pose.position, hits[0].pose.rotation);
-        //    }
-        //    //Vector3 pos = cam.ScreenToWorldPoint(new Vector3(point.x, point.y, cam.nearClipPlane));
-        //    //Instantiate(objectToSpawn, pos, Quaternion.identity);
-        //}
-
         // Order by y so top points and bottom points can be seperated
-        //pointList.Sort((a, b) => a.y.CompareTo(b.y));
+        // pointList.Sort((a, b) => a.y.CompareTo(b.y));
         pointList = pointList.OrderBy(point => point.y).ToList();
 
         // Top points
-        var tp1 = pointList[2];
-        var tp2 = pointList[3];
+        var tp1 = pointList[0];
+        var tp2 = pointList[1];
 
         // Bottom points
-        var bp1 = pointList[0];
-        var bp2 = pointList[1];
+        var bp1 = pointList[2];
+        var bp2 = pointList[3];
 
         // Get distances and aspect ratio of 2D points
         float width2D = Vector2.Distance(bp1, bp2);
@@ -265,7 +200,7 @@ public class ImageToWorld : MonoBehaviour
         if (hits.Count == 0) return;
         var bp2_v3 = hits[0].pose.position;
 
-        // Get the point between the bottom ones
+        // Get the center between the bottom points
         Vector3 bottomCenter = Vector3.Lerp(bp1_v3, bp2_v3, 0.5f);
 
         // Calculate rotation
@@ -281,11 +216,12 @@ public class ImageToWorld : MonoBehaviour
         // Spawn object
         GameObject obj = Instantiate(objectToSpawn, bottomCenter, rotation);
 
+        // Shrink the object so it can be created with an animation
         obj.transform.localScale = new Vector3(0.01f, 0.01f, 1);
-
         StartCoroutine(ScaleOverTime(obj, spawnTime, width, height));
     }
 
+    // Animationlike progress of the door growing to the desired scale
     private IEnumerator ScaleOverTime(GameObject obj, float time, float width, float height)
     {
         Vector3 originalScale = obj.transform.localScale;
