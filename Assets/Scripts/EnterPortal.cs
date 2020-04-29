@@ -5,9 +5,8 @@ using UnityEngine.Rendering;
 
 public class EnterPortal : MonoBehaviour
 {
-    public Material[] materials;
-
     private Transform device;
+    private PortalManager portalManager;
 
     // wasInFront logic should not be necessary for doorway interaction
     bool wasInFront;
@@ -15,22 +14,10 @@ public class EnterPortal : MonoBehaviour
 
     bool hasCollided;
 
-    // Hack for editor setup
     void Start()
     {
-        // Reset materials, can be a problem with creating a portal after the first one
         device = GameObject.FindWithTag("MainCamera").transform;
-        SetMaterials(false);
-    }
-
-    void SetMaterials(bool fullRender)
-    {
-        var stencilTest = fullRender ? CompareFunction.NotEqual : CompareFunction.Equal;
-
-        foreach (var mat in materials)
-        {
-            mat.SetInt("_StencilTest", (int)stencilTest);
-        }
+        portalManager = GameObject.Find("PortalManager").GetComponent<PortalManager>();
     }
 
     bool GetDeviceInFront()
@@ -69,7 +56,7 @@ public class EnterPortal : MonoBehaviour
         if ((isInFront && !wasInFront) || (wasInFront && !isInFront))
         {
             inside = !inside;
-            SetMaterials(inside);
+            portalManager.SetMaterials(inside);
         }
         wasInFront = isInFront;
     }
@@ -77,7 +64,7 @@ public class EnterPortal : MonoBehaviour
     // Hack for editor because of missing reset after play mode
     void OnDestroy()
     {
-        SetMaterials(false);
+        portalManager.SetMaterials(false);
     }
 
     private void Update()

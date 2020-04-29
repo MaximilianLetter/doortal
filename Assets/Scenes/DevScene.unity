@@ -888,6 +888,13 @@ MonoBehaviour:
     type: 3}
   spawnTime: 0.2
   replacementDistance: 0.25
+  materials:
+  - {fileID: 2100000, guid: d4416b8d0744a1d4b862fedaf270b02b, type: 2}
+  - {fileID: 2100000, guid: e4706a1e85b06aa4a92a041e8d77ec29, type: 2}
+  - {fileID: 2100000, guid: 597920336f0abe8418d43e4c7360d712, type: 2}
+  - {fileID: 2100000, guid: 91f96f89a63717f4db9fc2ccc26d4c56, type: 2}
+  - {fileID: 2100000, guid: 73894739de60bd243a76920ecd6858da, type: 2}
+  - {fileID: 2100000, guid: 337c3be7b45868345b8b9cb9a3ad6211, type: 2}
 --- !u!4 &1892140616
 Transform:
   m_ObjectHideFlags: 0

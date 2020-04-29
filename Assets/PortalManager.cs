@@ -1,15 +1,35 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class PortalManager : MonoBehaviour
 {
+    [Header("Spawn properties")]
     public GameObject objectToSpawn;
 
     public float spawnTime;
     public float replacementDistance;
 
+    [Header("Portal properties")]
+    public Material[] materials;
+
     private GameObject activePortal;
+
+    private void Start()
+    {
+        SetMaterials(false);
+    }
+
+    public void SetMaterials(bool fullRender)
+    {
+        var stencilTest = fullRender ? CompareFunction.NotEqual : CompareFunction.Equal;
+
+        foreach (var mat in materials)
+        {
+            mat.SetInt("_StencilTest", (int)stencilTest);
+        }
+    }
 
     public void SpawnObject(Vector3 position, Quaternion rotation, float width, float height)
     {
