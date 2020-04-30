@@ -10,11 +10,12 @@ using System.Linq; // TODO what is this?
 
 public class ImageToWorld : MonoBehaviour
 {
-    public float spawnTime;
+    public PortalManager portalManager;
 
     public GameObject objectToSpawn;
-    public GameObject uiLineObject;
+    public GameObject doorIndicator;
     private UILineRenderer uiLineRenderer;
+    private RectTransform doorButton;
     private ARRaycastManager rayManager;
 
     // These values are not used but could be if a stricter smoothing algorithm is implemented
@@ -34,18 +35,11 @@ public class ImageToWorld : MonoBehaviour
 
     void Start()
     {
-        uiLineRenderer = uiLineObject.GetComponent<UILineRenderer>();
+        uiLineRenderer = doorIndicator.transform.Find("UI LineRenderer").GetComponent<UILineRenderer>();
+        doorButton = doorIndicator.transform.Find("DoorButton").GetComponent<RectTransform>();
         rayManager = FindObjectOfType<ARRaycastManager>();
 
         CalcScaling();
-    }
-
-    private void Update()
-    {
-        if (Input.touchCount > 0 && Input.touches[0].phase == TouchPhase.Began)
-        {
-            PlaceARObject();
-        }
     }
 
     // Calculate the scaling and offset that has to be put on the points
@@ -78,21 +72,34 @@ public class ImageToWorld : MonoBehaviour
             }
             else
             {
+                Vector2 centroid = Vector2.zero;
+                float maxX = 0;
+                float minX = 1080.0f;
+                float maxY = 0;
+                float minY = 1920.0f;
                 // Convert the result array to a Vector2 List
                 List<Vector2> door = new List<Vector2>();
                 for (int i = 0; i < 4; i++)
                 {
                     Vector2 point = new Vector2((arr[i * 2] * scaleUp) + offset, arr[i * 2 + 1] * scaleUp);
                     door.Add(point);
+
+                    centroid += point;
+                    if (point.x > maxX) maxX = point.x;
+                    if (point.x < minX) minX = point.x;
+                    if (point.y > maxY) maxY = point.y;
+                    if (point.y < minY) minY = point.y;
                 }
                 door.Add(new Vector2((arr[0] * scaleUp) + offset, arr[1] * scaleUp));
 
                 uiLineRenderer.Points = door.ToArray();
+                doorButton.position = centroid * 0.25f;
+                doorButton.sizeDelta = new Vector2(maxX - minX, maxY - minY);
 
                 // If inactive, activate the line renderer and prepare to place an object
-                if (!uiLineObject.activeSelf)
+                if (!doorIndicator.activeSelf)
                 {
-                    uiLineObject.SetActive(true);
+                    doorIndicator.SetActive(true);
                     readyToPlace = true;
                 }
             }
@@ -109,9 +116,9 @@ public class ImageToWorld : MonoBehaviour
                 // If no new positive input appears, reset everything
                 showLines = false;
 
-                if (uiLineObject.activeSelf)
+                if (doorIndicator.activeSelf)
                 {
-                    uiLineObject.SetActive(false);
+                    doorIndicator.SetActive(false);
                     readyToPlace = false;
                 }
             }
@@ -161,7 +168,7 @@ public class ImageToWorld : MonoBehaviour
     }
 
     // Place the object based on the current proposed door
-    public void PlaceARObject()
+    public void PlaceObject()
     {
         if (!readyToPlace) return;
 
@@ -177,12 +184,12 @@ public class ImageToWorld : MonoBehaviour
         pointList = pointList.OrderBy(point => point.y).ToList();
 
         // Top points
-        var tp1 = pointList[0];
-        var tp2 = pointList[1];
+        var tp1 = pointList[2];
+        var tp2 = pointList[3];
 
         // Bottom points
-        var bp1 = pointList[2];
-        var bp2 = pointList[3];
+        var bp1 = pointList[0];
+        var bp2 = pointList[1];
 
         // Get distances and aspect ratio of 2D points
         float width2D = Vector2.Distance(bp1, bp2);
@@ -214,29 +221,6 @@ public class ImageToWorld : MonoBehaviour
         float height = width * ratio2D;
 
         // Spawn object
-        GameObject obj = Instantiate(objectToSpawn, bottomCenter, rotation);
-
-        // Shrink the object so it can be created with an animation
-        obj.transform.localScale = new Vector3(0.01f, 0.01f, 1);
-        StartCoroutine(ScaleOverTime(obj, spawnTime, width, height));
-    }
-
-    // Animationlike progress of the door growing to the desired scale
-    private IEnumerator ScaleOverTime(GameObject obj, float time, float width, float height)
-    {
-        Vector3 originalScale = obj.transform.localScale;
-        Vector3 destinationScale = new Vector3(width, height, 1.0f);
-
-        float currentTime = 0.0f;
-
-        do
-        {
-            obj.transform.localScale = Vector3.Lerp(originalScale, destinationScale, currentTime / time);
-            currentTime += Time.deltaTime;
-            yield return null;
-        } while (currentTime <= time);
-
-        // Make sure the endresult is the destination
-        obj.transform.localScale = destinationScale;
+        portalManager.SpawnObject(bottomCenter, rotation, width, height);
     }
 }
