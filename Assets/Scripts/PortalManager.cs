@@ -11,15 +11,22 @@ public class PortalManager : MonoBehaviour
     public float spawnTime;
     public float replacementDistance;
 
+    [Header("Particle properties")]
+    public GameObject particleEmitter;
+    public Transform device;
+
     [Header("Portal properties")]
     public Material[] materials;
 
     private GameObject activePortal;
-    private bool inside = false;
+    private bool inside;
 
     private void Start()
     {
+        inside = false;
+
         SetMaterials(false);
+        particleEmitter.SetActive(false);
     }
 
     // Hack for editor because of missing reset after play mode
@@ -33,6 +40,16 @@ public class PortalManager : MonoBehaviour
     {
         inside = !inside;
         SetMaterials(inside);
+
+        if (inside)
+        {
+            // Add the particle emitter to the device so it will move with the player
+            particleEmitter.transform.parent = device;
+        }
+        else
+        {
+            particleEmitter.transform.parent = null;
+        }
     }
 
     private void SetMaterials(bool fullRender)
@@ -51,6 +68,14 @@ public class PortalManager : MonoBehaviour
         {
             GameObject obj = Instantiate(objectToSpawn, position, rotation);
             activePortal = obj;
+
+            // Set the particleEmitter active and place it in the door
+            if (!inside)
+            {
+                particleEmitter.SetActive(true);
+                particleEmitter.transform.position = position;
+                particleEmitter.transform.rotation = rotation;
+            }
 
             // Only scale up the portal window, so child objects are not stretched
             GameObject portalWindow = activePortal.transform.Find("PortalWindow").gameObject;
@@ -108,6 +133,11 @@ public class PortalManager : MonoBehaviour
         {
             // Since only the portal window is scaled, the parent object needs to be destroyed
             Destroy(obj.transform.parent.gameObject);
+
+            // Deactivate the particleEmitter
+            particleEmitter.transform.parent = null;
+            particleEmitter.SetActive(false);
+
             // Reset the scene to start
             SetMaterials(false);
             inside = false;

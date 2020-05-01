@@ -318,7 +318,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 2115600265}
+    m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
         type: 3}
@@ -358,7 +358,7 @@ PrefabInstance:
     - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
         type: 3}
@@ -382,9 +382,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b82f441867a11394d97e9fe26221d1d9, type: 3}
---- !u!4 &165655162 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
+--- !u!1 &165655162 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6291443401498633273, guid: b82f441867a11394d97e9fe26221d1d9,
     type: 3}
   m_PrefabInstance: {fileID: 165655161}
   m_PrefabAsset: {fileID: 0}
@@ -949,7 +949,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
+  m_TargetGraphic: {fileID: 1590714881}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
@@ -1008,6 +1008,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3148060875754556912, guid: 21a6c1987f0df15428ca2ad8057072db,
+        type: 3}
+      propertyPath: particleEmitter
+      value: 
+      objectReference: {fileID: 165655162}
+    - target: {fileID: 3148060875754556912, guid: 21a6c1987f0df15428ca2ad8057072db,
+        type: 3}
+      propertyPath: device
+      value: 
+      objectReference: {fileID: 2115600265}
     - target: {fileID: 3148060875754556913, guid: 21a6c1987f0df15428ca2ad8057072db,
         type: 3}
       propertyPath: m_Name
@@ -1433,7 +1443,6 @@ Transform:
   m_Children:
   - {fileID: 791599865}
   - {fileID: 1821354281}
-  - {fileID: 165655162}
   m_Father: {fileID: 1775762588}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
