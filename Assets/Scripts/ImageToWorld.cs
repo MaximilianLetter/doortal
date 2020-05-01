@@ -72,11 +72,13 @@ public class ImageToWorld : MonoBehaviour
             }
             else
             {
+                // Start values for setting up button and icon on the detected door
                 Vector2 centroid = Vector2.zero;
                 float maxX = 0;
                 float minX = 1080.0f;
                 float maxY = 0;
                 float minY = 1920.0f;
+
                 // Convert the result array to a Vector2 List
                 List<Vector2> door = new List<Vector2>();
                 for (int i = 0; i < 4; i++)
@@ -93,6 +95,8 @@ public class ImageToWorld : MonoBehaviour
                 door.Add(new Vector2((arr[0] * scaleUp) + offset, arr[1] * scaleUp));
 
                 uiLineRenderer.Points = door.ToArray();
+
+                // Set up button and icon
                 doorButton.position = centroid * 0.25f;
                 doorButton.sizeDelta = new Vector2(maxX - minX, maxY - minY);
 

@@ -22,7 +22,6 @@ public class CameraImageManipulation : MonoBehaviour
 
     // Array to catch OpenCV results
     private const int CORNERS = 4;
-    private NativeArray<float> nativeFloatArray;
     private float[] managedArray;
 
     // Import native C++ library
@@ -38,7 +37,6 @@ public class CameraImageManipulation : MonoBehaviour
         // Setup result arrays
         // NativeArray  -> modified in C++
         // ManagedArray -> receives values from native
-        nativeFloatArray = new NativeArray<float>(CORNERS * 2, Allocator.Persistent);
         managedArray = new float[CORNERS * 2];
 
         // Setup camera
@@ -54,9 +52,6 @@ public class CameraImageManipulation : MonoBehaviour
 
     void OnDisable()
     {
-        // Release allocated memory
-        nativeFloatArray.Dispose();
-
         // NOTE: documentation says 'cameraFrameReceived'
         cameraManager.frameReceived -= OnCameraFrameReceived;
     }
@@ -114,6 +109,8 @@ public class CameraImageManipulation : MonoBehaviour
         Color32[] rawPixels = camTexture.GetPixels32();
 
         // Get pointer to nativeArray
+
+        NativeArray<float> nativeFloatArray = new NativeArray<float>(CORNERS * 2, Allocator.Temp);
         void* ptr = NativeArrayUnsafeUtility.GetUnsafePtr(nativeFloatArray);
 
         // Call to C++ Code
@@ -132,5 +129,6 @@ public class CameraImageManipulation : MonoBehaviour
 
         // Done with our temporary data
         buffer.Dispose();
+        nativeFloatArray.Dispose();
     }
 }

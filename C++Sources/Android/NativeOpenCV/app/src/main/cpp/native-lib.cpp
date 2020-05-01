@@ -20,7 +20,7 @@ using namespace std;
 // Declare all used constants
 const int RES = 180;
 
-const float CONTRAST = 1.1;
+const float CONTRAST = 1.2;
 
 // Blur constants
 const Size BLUR_KERNEL = Size(3, 3);
@@ -39,7 +39,7 @@ const int CORNERS_MASK_OFFSET = 10;
 const bool CORNERS_HARRIS = false;
 
 // Vertical lines constants
-const float LINE_MAX = 0.85;
+const float LINE_MAX = 0.9;
 const float LINE_MIN = 0.3;
 const float LINE_ANGLE_MIN = 0.875; // RAD
 
@@ -134,11 +134,6 @@ bool detect(Mat& image, vector<Point2f>& result)
     if (candidates.size())
     {
         vector<Point2f> door = selectBestCandidate(candidates, scores, gray);
-
-        cv::line(image, door[0], door[1], Scalar(255, 255, 0), 1);
-        cv::line(image, door[1], door[2], Scalar(255, 255, 0), 1);
-        cv::line(image, door[2], door[3], Scalar(255, 255, 0), 1);
-        cv::line(image, door[3], door[0], Scalar(255, 255, 0), 1);
 
         result = door;
 
@@ -428,7 +423,8 @@ extern "C" {
         vector<Point2f> door;
 
         if (rotation) {
-            flip(image, image, 1);
+            // NOTE: the image is already flipped in C#
+            // flip(image, image, 1);
             rotate(image, image, ROTATE_90_CLOCKWISE);
             resize(image, image, Size(image.cols, image.rows), 0, 0, INTER_LINEAR);
         }
