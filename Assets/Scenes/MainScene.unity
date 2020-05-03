@@ -687,7 +687,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   portalManager: {fileID: 1744301379}
-  objectToSpawn: {fileID: 5393536777179297333, guid: 8e817a53af3bb51418c9c260976c135c,
+  spawnHelper: {fileID: 7956694165691848474, guid: bd55b3e726177834c9bab866d40fcf8e,
     type: 3}
   doorIndicator: {fileID: 274518450}
 --- !u!4 &930307225

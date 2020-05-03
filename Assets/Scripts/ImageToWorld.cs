@@ -12,11 +12,12 @@ public class ImageToWorld : MonoBehaviour
 {
     public PortalManager portalManager;
 
-    public GameObject objectToSpawn;
+    public GameObject spawnHelper;
     public GameObject doorIndicator;
     private UILineRenderer uiLineRenderer;
     private RectTransform doorButton;
     private ARRaycastManager rayManager;
+    private Camera cam;
 
     // These values are not used but could be if a stricter smoothing algorithm is implemented
     private const int resolution = 1080; // END resolution
@@ -38,6 +39,7 @@ public class ImageToWorld : MonoBehaviour
         uiLineRenderer = doorIndicator.transform.Find("UI LineRenderer").GetComponent<UILineRenderer>();
         doorButton = doorIndicator.transform.Find("DoorButton").GetComponent<RectTransform>();
         rayManager = FindObjectOfType<ARRaycastManager>();
+        cam = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
 
         CalcScaling();
     }
@@ -195,11 +197,6 @@ public class ImageToWorld : MonoBehaviour
         var bp1 = pointList[0];
         var bp2 = pointList[1];
 
-        // Get distances and aspect ratio of 2D points
-        float width2D = Vector2.Distance(bp1, bp2);
-        float height2D = Vector2.Distance(tp1, bp1); // maybe better take top center point (perspective!)
-        float ratio2D = height2D / width2D;
-
         // Build Vector3 Points of bottom points via raycast
         List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
@@ -220,9 +217,29 @@ public class ImageToWorld : MonoBehaviour
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         Quaternion rotation = lookRotation * Quaternion.Euler(0, 90.0f, 0);
 
-        // Get width and height for object
+        // Get width for object
         float width = Vector3.Distance(bp1_v3, bp2_v3);
-        float height = width * ratio2D;
+
+        // Calulate height with help of a vertical quad that can be raycasted against
+        GameObject quad = Instantiate(spawnHelper, bottomCenter, rotation);
+        RaycastHit hit;
+        Vector3 tp1_v3, tp2_v3;
+        Ray ray;
+
+        ray = cam.ScreenPointToRay(tp1);
+        Physics.Raycast(ray, out hit);
+        tp1_v3 = hit.point;
+
+        ray = cam.ScreenPointToRay(tp2);
+        Physics.Raycast(ray, out hit);
+        tp2_v3 = hit.point;
+
+        Vector3 topCenter = Vector3.Lerp(tp1_v3, tp2_v3, 0.5f);
+
+        float height = Vector3.Distance(bottomCenter, topCenter);
+
+        // Destroy the used quad
+        Destroy(quad);
 
         // Spawn object
         portalManager.SpawnObject(bottomCenter, rotation, width, height);
