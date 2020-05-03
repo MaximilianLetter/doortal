@@ -494,7 +494,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   raycastTarget: {fileID: 7956694165691848474, guid: bd55b3e726177834c9bab866d40fcf8e,
     type: 3}
-  testObj: {fileID: 3024009313394293986, guid: 6f2a80420eaf0e340994383e0384a748, type: 3}
+  testObj: {fileID: 3436057440160505301, guid: 92d6c80fca0c2c74ebebc69e6d839d76, type: 3}
   cam: {fileID: 175876396}
   bottomTarget: {fileID: 619191579}
   uiPosition: {x: 500, y: 700}
