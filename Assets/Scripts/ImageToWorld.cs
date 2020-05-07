@@ -31,6 +31,7 @@ public class ImageToWorld : MonoBehaviour
     private bool showLines = false;
     private bool holdLines = false;
 
+    private Vector2 imgInputSize = new Vector2(640, 480);
     private float scaleUp;
     private float offset;
 
@@ -49,17 +50,16 @@ public class ImageToWorld : MonoBehaviour
     {
         // NOTE: Input should be set dynamically by device
         Vector2 goal = new Vector2(Screen.height, Screen.width);
-        Vector2 input = new Vector2(640, 480);
 
         // NOTE: The cam image was downsampled for processing
         // 120p -> 0.25f
         // 180p -> 0.375f
-        input *= 0.375f;
+        Vector2 inputDownscaled = imgInputSize * 0.375f;
 
-        // NOTE: Height is the defining factor since aspect ratios are different
-        scaleUp = goal.x / input.x;
+        // NOTE: Aspect ratios are different, there for an offset needs to be calculated
+        scaleUp = goal.x / inputDownscaled.x;
 
-        offset = -((input.y * scaleUp) - goal.y) / 2;
+        offset = -((inputDownscaled.y * scaleUp) - goal.y) / 2;
     }
 
     public void ShowIndicator(bool foundNew, float[] arr)
@@ -77,9 +77,9 @@ public class ImageToWorld : MonoBehaviour
                 // Start values for setting up button and icon on the detected door
                 Vector2 centroid = Vector2.zero;
                 float maxX = 0;
-                float minX = 1080.0f;
+                float minX = Screen.width;
                 float maxY = 0;
-                float minY = 1920.0f;
+                float minY = Screen.height;
 
                 // Convert the result array to a Vector2 List
                 List<Vector2> door = new List<Vector2>();
