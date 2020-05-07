@@ -45,9 +45,15 @@ public class PortalManager : MonoBehaviour
         {
             // Add the particle emitter to the device so it will move with the player
             particleEmitter.transform.parent = device;
+            Vector3 position = particleEmitter.transform.localPosition;
+            particleEmitter.transform.localPosition = new Vector3(position.x, position.y, 0);
         }
         else
         {
+            // Leave the particle Emitter in the augmented world with an offset to the door
+            Vector3 offset = activePortal.transform.rotation * new Vector3(0, 0, 1);
+
+            particleEmitter.transform.position = activePortal.transform.position + offset;
             particleEmitter.transform.parent = null;
         }
     }
@@ -73,8 +79,13 @@ public class PortalManager : MonoBehaviour
             if (!inside)
             {
                 particleEmitter.SetActive(true);
-                particleEmitter.transform.position = position;
+                Vector3 offset = rotation * new Vector3(0, 0, 1);
+                particleEmitter.transform.position = position + offset;
                 particleEmitter.transform.rotation = rotation;
+            } else
+            {
+                // Make sure the door is always facing into the augmented world
+                obj.transform.Rotate(Vector3.up, 180.0f);
             }
 
             // Only scale up the portal window, so child objects are not stretched
