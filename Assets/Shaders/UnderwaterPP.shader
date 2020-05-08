@@ -8,6 +8,8 @@
         _NoiseSpeed ("Noise Speed", float) = 1
         _PixelOffset ("Pixel Offset", float) = 0.005
 
+        _ColorTint("Color Tint", Color) = (1,1,1,1)
+
         _StencilTex ("Texture", 2D) = "white" {}
 
         // 3 == Equal, 6 == NotEqual
@@ -30,6 +32,7 @@
             #define M_PI 3.1415926535897932384626433832795028841971
 
             uniform float _NoiseFrequency, _NoiseScale, _NoiseSpeed, _PixelOffset;
+            uniform fixed4 _ColorTint;
 
             struct appdata
             {
@@ -70,6 +73,8 @@
 
                 float4 noiseToDirection = float4(cos(noise*M_PI*2), sin(noise*M_PI*2), 0, 0);
                 fixed4 col = tex2Dproj(_MainTex, i.screenPos + (normalize(noiseToDirection) * _PixelOffset));
+
+                col = half4((col.rgb * (1 - _ColorTint.a) + _ColorTint.rgb * _ColorTint.a), 1);
 
                 return col;
             }

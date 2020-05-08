@@ -33,4 +33,5 @@ Material:
     - _NoiseSpeed: 20
     - _PixelOffset: 0.005
     - _StencilTest: 3
-    m_Colors: []
+    m_Colors:
+    - _ColorTint: {r: 0.19607843, g: 0.5882353, b: 1, a: 0.19607843}
