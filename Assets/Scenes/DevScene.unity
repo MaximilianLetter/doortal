@@ -1445,6 +1445,11 @@ PrefabInstance:
       propertyPath: device
       value: 
       objectReference: {fileID: 175876397}
+    - target: {fileID: 3148060875754556912, guid: 21a6c1987f0df15428ca2ad8057072db,
+        type: 3}
+      propertyPath: augmentationCenter
+      value: 
+      objectReference: {fileID: 345877116}
     - target: {fileID: 3148060875754556913, guid: 21a6c1987f0df15428ca2ad8057072db,
         type: 3}
       propertyPath: m_Name
@@ -1514,15 +1519,40 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1938291560272347503, guid: b82f441867a11394d97e9fe26221d1d9,
+    - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
         type: 3}
-      propertyPath: SizeModule.y.minMaxState
-      value: 3
+      propertyPath: m_LocalPosition.x
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1938291560272347503, guid: b82f441867a11394d97e9fe26221d1d9,
+    - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
         type: 3}
-      propertyPath: SizeModule.z.minMaxState
-      value: 3
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
         type: 3}
@@ -1544,15 +1574,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 6291443401498633273, guid: b82f441867a11394d97e9fe26221d1d9,
         type: 3}
       propertyPath: m_Name
-      value: ParticleEmitter
+      value: AugmentationManager
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b82f441867a11394d97e9fe26221d1d9, type: 3}

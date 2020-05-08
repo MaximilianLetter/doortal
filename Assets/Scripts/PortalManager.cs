@@ -12,21 +12,25 @@ public class PortalManager : MonoBehaviour
     public float replacementDistance;
 
     [Header("Particle properties")]
-    public GameObject particleEmitter;
+    public GameObject augmentationCenter;
     public Transform device;
 
     [Header("Portal properties")]
     public Material[] materials;
 
+    private AugmentationManager augmentationManager;
+
     private GameObject activePortal;
     private bool inside;
+    private bool created;
 
     private void Start()
     {
         inside = false;
+        created = false;
 
         SetMaterials(false);
-        particleEmitter.SetActive(false);
+        augmentationManager = augmentationCenter.GetComponent<AugmentationManager>();
     }
 
     // Hack for editor because of missing reset after play mode
@@ -44,17 +48,17 @@ public class PortalManager : MonoBehaviour
         if (inside)
         {
             // Add the particle emitter to the device so it will move with the player
-            particleEmitter.transform.parent = device;
-            Vector3 position = particleEmitter.transform.localPosition;
-            particleEmitter.transform.localPosition = new Vector3(position.x, position.y, 0);
+            augmentationCenter.transform.parent = device;
+            Vector3 position = augmentationCenter.transform.localPosition;
+            augmentationCenter.transform.localPosition = new Vector3(position.x, position.y, 0);
         }
         else
         {
             // Leave the particle Emitter in the augmented world with an offset to the door
             Vector3 offset = activePortal.transform.rotation * new Vector3(0, 0, 1);
 
-            particleEmitter.transform.position = activePortal.transform.position + offset;
-            particleEmitter.transform.parent = null;
+            augmentationCenter.transform.position = activePortal.transform.position + offset;
+            augmentationCenter.transform.parent = null;
         }
     }
 
@@ -75,17 +79,23 @@ public class PortalManager : MonoBehaviour
             GameObject obj = Instantiate(objectToSpawn, position, rotation);
             activePortal = obj;
 
-            // Set the particleEmitter active and place it in the door
+            // Set the augmentationCenter active and place it in the door
             if (!inside)
             {
-                particleEmitter.SetActive(true);
                 Vector3 offset = rotation * new Vector3(0, 0, 1);
-                particleEmitter.transform.position = position + offset;
-                particleEmitter.transform.rotation = rotation;
-            } else
+                augmentationCenter.transform.position = position + offset;
+                augmentationCenter.transform.rotation = rotation;
+            }
+            else
             {
                 // Make sure the door is always facing into the augmented world
                 obj.transform.Rotate(Vector3.up, 180.0f);
+            }
+
+            if (!created)
+            {
+                augmentationManager.ActivateAugmentation();
+                created = true;
             }
 
             // Only scale up the portal window, so child objects are not stretched
@@ -145,13 +155,15 @@ public class PortalManager : MonoBehaviour
             // Since only the portal window is scaled, the parent object needs to be destroyed
             Destroy(obj.transform.parent.gameObject);
 
-            // Deactivate the particleEmitter
-            particleEmitter.transform.parent = null;
-            particleEmitter.SetActive(false);
+            // Deactivate the augmentationCenter
+            augmentationCenter.transform.parent = null;
 
             // Reset the scene to start
             SetMaterials(false);
             inside = false;
+
+            augmentationManager.DeactivateAugmentation();
+            created = false;
         }
     }
 

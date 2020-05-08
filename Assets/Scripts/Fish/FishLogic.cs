@@ -33,10 +33,18 @@ public class FishLogic : MonoBehaviour
 
         if (Vector3.Distance(transform.position, center) > fishManager.spawnRange)
         {
+            if (!turning)
+            {
+                speed = Random.Range(catchUpSpeed * 0.75f, catchUpSpeed * 1.25f);
+            }
             turning = true;
         }
         else
         {
+            if (turning)
+            {
+                speed = Random.Range(avgSpeed * 0.75f, avgSpeed * 1.25f);
+            }
             turning = false;
         }
 
@@ -47,8 +55,6 @@ public class FishLogic : MonoBehaviour
                 transform.rotation,
                 Quaternion.LookRotation(direction),
                 rotationSpeed * Time.deltaTime);
-
-            speed = Random.Range(catchUpSpeed * 0.75f, catchUpSpeed * 1.25f);
         }
         else
         {

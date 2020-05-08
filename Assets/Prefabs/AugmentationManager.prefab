@@ -1,5 +1,53 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1571748717
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1571748718}
+  - component: {fileID: 1571748719}
+  m_Layer: 0
+  m_Name: FishManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1571748718
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1571748717}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 6291443401498633270}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1571748719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1571748717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee2badf43d9894f4abb7963968cd10ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fishPrefab: {fileID: 5440941981221932112, guid: f19e7ff68d3b26f47b2726e017b83fd3,
+    type: 3}
+  spawnRange: 1.25
+  numFish: 8
+  allFish: []
 --- !u!1 &6291443401498633273
 GameObject:
   m_ObjectHideFlags: 0
@@ -9,8 +57,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6291443401498633270}
+  - component: {fileID: 345877118}
   m_Layer: 0
-  m_Name: ParticleEmitter
+  m_Name: AugmentationManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23,14 +72,29 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6291443401498633273}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -1, z: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1938291560252951087}
+  - {fileID: 1571748718}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &345877118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6291443401498633273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc68b36e3a7277d4ebbda64d1c3cc12d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fishManagerObj: {fileID: 1571748717}
+  particleObj: {fileID: 1938291560253187663}
 --- !u!1001 &8574070864053702267
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -108,8 +172,29 @@ PrefabInstance:
       propertyPath: moveWithTransform
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7789830844920188692, guid: 1e3da918a843552428abee82b9236e40,
+        type: 3}
+      propertyPath: playOnAwake
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7789830844920188692, guid: 1e3da918a843552428abee82b9236e40,
+        type: 3}
+      propertyPath: SizeModule.y.minMaxState
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7789830844920188692, guid: 1e3da918a843552428abee82b9236e40,
+        type: 3}
+      propertyPath: SizeModule.z.minMaxState
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1e3da918a843552428abee82b9236e40, type: 3}
+--- !u!1 &1938291560253187663 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7789830844905285684, guid: 1e3da918a843552428abee82b9236e40,
+    type: 3}
+  m_PrefabInstance: {fileID: 8574070864053702267}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1938291560252951087 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7789830844904981588, guid: 1e3da918a843552428abee82b9236e40,

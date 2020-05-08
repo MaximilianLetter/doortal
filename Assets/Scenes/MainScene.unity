@@ -378,7 +378,7 @@ PrefabInstance:
     - target: {fileID: 6291443401498633273, guid: b82f441867a11394d97e9fe26221d1d9,
         type: 3}
       propertyPath: m_Name
-      value: ParticleEmitter
+      value: AugmentationManager
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b82f441867a11394d97e9fe26221d1d9, type: 3}
@@ -1023,6 +1023,11 @@ PrefabInstance:
       propertyPath: device
       value: 
       objectReference: {fileID: 2115600265}
+    - target: {fileID: 3148060875754556912, guid: 21a6c1987f0df15428ca2ad8057072db,
+        type: 3}
+      propertyPath: augmentationCenter
+      value: 
+      objectReference: {fileID: 165655162}
     - target: {fileID: 3148060875754556913, guid: 21a6c1987f0df15428ca2ad8057072db,
         type: 3}
       propertyPath: m_Name
