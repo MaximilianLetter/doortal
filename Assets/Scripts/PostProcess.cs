@@ -6,7 +6,10 @@ using UnityEngine;
 public class PostProcess : MonoBehaviour
 {
     public Material effectMaterial;
-    public RenderTexture stencilTex;
+    public Camera stencilCam;
+
+    private RenderTexture stencilTex;
+    private RenderTexture buffer;
     //public Material stencilMaterial;
     //public Material simpleRender;
 
@@ -17,6 +20,29 @@ public class PostProcess : MonoBehaviour
     //{
     //    GetComponent<Camera>().depthTextureMode = DepthTextureMode.Depth;
     //}
+
+    private void Start()
+    {
+        stencilTex = new RenderTexture(Screen.width, Screen.height, 0)
+        {
+            format = RenderTextureFormat.R8,
+            name = "stencilTex"
+        };
+
+        stencilCam.targetTexture = stencilTex;
+
+        Invoke("MatchMainCamera", 1.0f);
+    }
+
+    void MatchMainCamera()
+    {
+        Camera cam = Camera.main;
+        Debug.Log(cam.projectionMatrix);
+
+        stencilCam.projectionMatrix = cam.projectionMatrix;
+
+        Debug.Log(stencilCam.projectionMatrix);
+    }
 
     //private void OnRenderImage(RenderTexture source, RenderTexture destination)
     //{
@@ -30,10 +56,25 @@ public class PostProcess : MonoBehaviour
 
     public void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
-        //effectMaterial.
         effectMaterial.SetTexture("_StencilTex", stencilTex);
         Graphics.Blit(source, destination, effectMaterial);
     }
+
+    // NOTE: Version with buffer between
+    //public void OnRenderImage(RenderTexture source, RenderTexture destination)
+    //{
+    //    buffer = RenderTexture.GetTemporary(Screen.width, Screen.height, 24);
+    //    Graphics.Blit(source, buffer);
+
+    //    effectMaterial.SetTexture("_BufferTex", buffer);
+    //    effectMaterial.SetTexture("_StencilTex", stencilTex);
+    //    Graphics.Blit(source, destination, effectMaterial);
+    //}
+
+    //private void OnPostRender()
+    //{
+    //    RenderTexture.ReleaseTemporary(buffer);
+    //}
 
     //private void OnPostRender()
     //{
