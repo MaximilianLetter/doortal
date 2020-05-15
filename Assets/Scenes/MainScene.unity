@@ -658,7 +658,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_TargetTexture
       value: 
-      objectReference: {fileID: 1504073285}
+      objectReference: {fileID: 1583472983}
     - target: {fileID: 6067126755542164583, guid: b96608dcc4c8d8946842b3c606d7f15a,
         type: 3}
       propertyPath: m_projectionMatrixMode
@@ -893,7 +893,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!84 &1504073285
+--- !u!84 &1583472983
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1067,7 +1067,7 @@ PrefabInstance:
     - target: {fileID: 3148060875754556912, guid: 21a6c1987f0df15428ca2ad8057072db,
         type: 3}
       propertyPath: materials.Array.size
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3148060875754556912, guid: 21a6c1987f0df15428ca2ad8057072db,
         type: 3}
@@ -1089,6 +1089,11 @@ PrefabInstance:
       propertyPath: materials.Array.data[4]
       value: 
       objectReference: {fileID: 2100000, guid: 41216ea611036724d8a04d6161e31b82, type: 2}
+    - target: {fileID: 3148060875754556912, guid: 21a6c1987f0df15428ca2ad8057072db,
+        type: 3}
+      propertyPath: materials.Array.data[5]
+      value: 
+      objectReference: {fileID: 2100000, guid: 4c33fdea55313d04e91d9b223c0f9381, type: 2}
     - target: {fileID: 3148060875754556913, guid: 21a6c1987f0df15428ca2ad8057072db,
         type: 3}
       propertyPath: m_Name
