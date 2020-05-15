@@ -187,41 +187,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!84 &80807533
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: stencilTex
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  serializedVersion: 3
-  m_Width: 1600
-  m_Height: 2560
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthFormat: 0
-  m_ColorFormat: 5
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
 --- !u!1 &175876394
 GameObject:
   m_ObjectHideFlags: 0
@@ -367,7 +332,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 487fa9a442ab4714a868d04c66d6c820, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectMaterial: {fileID: 2100000, guid: 41216ea611036724d8a04d6161e31b82, type: 2}
+  effectMaterial: {fileID: 2100000, guid: 337c3be7b45868345b8b9cb9a3ad6211, type: 2}
   stencilCam: {fileID: 1231366417}
 --- !u!114 &175876402
 MonoBehaviour:
@@ -655,6 +620,41 @@ Transform:
   m_Father: {fileID: 175876397}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!84 &917262575
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: stencilTex
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  serializedVersion: 3
+  m_Width: 1600
+  m_Height: 2560
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthFormat: 0
+  m_ColorFormat: 5
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
 --- !u!224 &1017689384 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1074134435325223798, guid: acb1127743386a94a824b433f085c23c,
@@ -673,68 +673,6 @@ Camera:
     type: 3}
   m_PrefabInstance: {fileID: 6067126756512143779}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &1287286959
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1585201990951412, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_Name
-      value: AR Feathered Plane
-      objectReference: {fileID: 0}
-    - target: {fileID: 4266372707468888, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4266372707468888, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4266372707468888, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 3.26
-      objectReference: {fileID: 0}
-    - target: {fileID: 4266372707468888, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4266372707468888, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4266372707468888, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4266372707468888, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4266372707468888, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_RootOrder
-      value: 9
-      objectReference: {fileID: 0}
-    - target: {fileID: 4266372707468888, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4266372707468888, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4266372707468888, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 33790042174619686, guid: c6dd78e44e1fe894b8247bb3b374d266,
-        type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: c6dd78e44e1fe894b8247bb3b374d266, type: 3}
 --- !u!1 &1529843551
 GameObject:
   m_ObjectHideFlags: 0
@@ -1511,7 +1449,7 @@ PrefabInstance:
         type: 3}
       propertyPath: materials.Array.data[4]
       value: 
-      objectReference: {fileID: 2100000, guid: 41216ea611036724d8a04d6161e31b82, type: 2}
+      objectReference: {fileID: 2100000, guid: ac11f67810846744bb45d2a405d59ebb, type: 2}
     - target: {fileID: 3148060875754556913, guid: 21a6c1987f0df15428ca2ad8057072db,
         type: 3}
       propertyPath: m_Name
@@ -1581,6 +1519,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4084477443320221586, guid: b82f441867a11394d97e9fe26221d1d9,
+        type: 3}
+      propertyPath: playOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1714,6 +1657,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_TargetTexture
       value: 
-      objectReference: {fileID: 80807533}
+      objectReference: {fileID: 917262575}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b96608dcc4c8d8946842b3c606d7f15a, type: 3}

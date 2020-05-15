@@ -4,27 +4,25 @@ using UnityEngine;
 
 public class AugmentationManager : MonoBehaviour
 {
-    public GameObject fishManagerObj;
-    public GameObject particleObj;
+    public FishSwarm fishManager;
+    public ParticleSystem[] particleSystems;
 
-    private FishSwarm fishManager;
-    private ParticleSystem particles;
-
-    private void Start()
-    {
-        fishManager = fishManagerObj.GetComponent<FishSwarm>();
-        particles = particleObj.GetComponent<ParticleSystem>();
-    }
 
     public void DeactivateAugmentation()
     {
         fishManager.CleanUp();
-        particles.Stop();
+        foreach (var particles in particleSystems)
+        {
+            particles.Stop();
+        }
     }
 
     public void ActivateAugmentation()
     {
         fishManager.SetUp();
-        particles.Play();
+        foreach (var particles in particleSystems)
+        {
+            particles.Play();
+        }
     }
 }
