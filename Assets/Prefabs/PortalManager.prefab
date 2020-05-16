@@ -47,10 +47,12 @@ MonoBehaviour:
     type: 3}
   spawnTime: 0.2
   replacementDistance: 0.25
-  particleEmitter: {fileID: 0}
+  augmentationCenter: {fileID: 0}
   device: {fileID: 0}
   materials:
   - {fileID: 2100000, guid: 73894739de60bd243a76920ecd6858da, type: 2}
   - {fileID: 2100000, guid: 337c3be7b45868345b8b9cb9a3ad6211, type: 2}
   - {fileID: 2100000, guid: 82be4132857e2374b870698585672f32, type: 2}
   - {fileID: 2100000, guid: 0edddce09c2f17544b8d5e69678f27a4, type: 2}
+  - {fileID: 2100000, guid: ac11f67810846744bb45d2a405d59ebb, type: 2}
+  - {fileID: 2100000, guid: c2bf043a4913f1342ba142c36e9ea830, type: 2}
