@@ -94,7 +94,7 @@ public class PortalManager : MonoBehaviour
 
             if (!created)
             {
-                augmentationManager.ActivateAugmentation();
+                augmentationManager.Active = true;
                 created = true;
             }
 
@@ -162,7 +162,7 @@ public class PortalManager : MonoBehaviour
             SetMaterials(false);
             inside = false;
 
-            augmentationManager.DeactivateAugmentation();
+            augmentationManager.Active = false;
             created = false;
         }
     }
