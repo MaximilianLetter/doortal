@@ -1,4 +1,4 @@
-﻿Shader "Custom/PP/Underwater"
+﻿Shader "Custom/PP/Heat"
 {
     Properties
     {
@@ -67,11 +67,14 @@
                     return tex2Dproj(_MainTex, i.screenPos);
                 }
 
-                float3 sp = float3(i.screenPos.x, i.screenPos.y, 0) * _NoiseFrequency;
+                // Only scale one direction by _NoiseFrequency to make an horizontal effect
+                float spy = i.screenPos.y * _NoiseFrequency;
+
+                float3 sp = float3(i.screenPos.x, spy, 0);
                 sp.z += _Time.x * _NoiseSpeed;
                 float noise = _NoiseScale * ((snoise(sp) + 1) / 2);
 
-                float4 noiseToDirection = float4(cos(noise*M_PI*2), sin(noise*M_PI*2), 0, 0);
+                float4 noiseToDirection = float4(cos(noise*M_PI*2), sin(noise * M_PI * 2), 0, 0);
                 fixed4 col = tex2Dproj(_MainTex, i.screenPos + (normalize(noiseToDirection) * _PixelOffset));
 
                 col = half4((col.rgb * (1 - _ColorTint.a) + _ColorTint.rgb * _ColorTint.a), 1);
