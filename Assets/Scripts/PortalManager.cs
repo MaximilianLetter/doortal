@@ -13,7 +13,6 @@ public class PortalManager : MonoBehaviour
 
     [Header("Particle properties")]
     public GameObject augmentationCenter;
-    public Transform device;
 
     [Header("Portal properties")]
     public Material[] materials;
@@ -47,18 +46,18 @@ public class PortalManager : MonoBehaviour
 
         if (inside)
         {
-            // Add the particle emitter to the device so it will move with the player
-            augmentationCenter.transform.parent = device;
-            Vector3 position = augmentationCenter.transform.localPosition;
-            augmentationCenter.transform.localPosition = new Vector3(position.x, position.y, 0);
+            // Let the particle emitter move with the player
+            augmentationManager.moveWithDevice = true;
         }
         else
         {
-            // Leave the particle Emitter in the augmented world with an offset to the door
+            // Leave the particle Emitter in the augmented world
+            augmentationManager.moveWithDevice = false;
+
+            // Add an offset to the door position
             Vector3 offset = activePortal.transform.rotation * new Vector3(0, 0, 1);
 
             augmentationCenter.transform.position = activePortal.transform.position + offset;
-            augmentationCenter.transform.parent = null;
         }
     }
 

@@ -41,6 +41,8 @@ public class AugmentationManager : MonoBehaviour
     public delegate void OnAugmentationChangeDelegate(Augmentation oldVal, Augmentation newVal);
     public event OnAugmentationChangeDelegate OnAugmentationChange;
 
+    public bool moveWithDevice;
+
     [Header("Water")]
     public Material ppUnderwater;
     public FishSwarm fishManager;
@@ -49,18 +51,34 @@ public class AugmentationManager : MonoBehaviour
     [Header("Fire")]
     public Material ppFire;
     public ParticleSystem[] particleSystemsFire;
+    public RandomMovement randomSmoke;
 
+    private GameObject device;
     private PostProcess postProcess;
 
     private void Start()
     {
+        device = Camera.main.gameObject;
         postProcess = Camera.main.GetComponent<PostProcess>();
 
+        moveWithDevice = false;
         Active = false;
         CurrentAugmentation = Augmentation.water;
 
         OnActiveChange += SwitchActive;
         OnAugmentationChange += SwitchAugmentation;
+    }
+
+    private void FixedUpdate()
+    {
+        if (moveWithDevice)
+        {
+            Vector3 pos = device.transform.position;
+            Vector3 current = gameObject.transform.position;
+
+            // Only alter x and z position, height remains on ground level
+            gameObject.transform.position = new Vector3(pos.x, current.y, pos.z);
+        }
     }
 
     // Callback function that triggers whenever the active property of this script is changed
@@ -103,6 +121,7 @@ public class AugmentationManager : MonoBehaviour
 
             case Augmentation.fire:
                 postProcess.effectMaterial = ppFire;
+                randomSmoke.SetUp();
                 foreach (var particles in particleSystemsFire)
                 {
                     particles.Play();
@@ -114,8 +133,9 @@ public class AugmentationManager : MonoBehaviour
     // Clear and stop all used effects
     private void DeactivateAugmentation()
     {
-        // TODO heat effects
         fishManager.CleanUp();
+        randomSmoke.CleanUp();
+
         foreach (var particles in particleSystemsWater)
         {
             particles.Clear();

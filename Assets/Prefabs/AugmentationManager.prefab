@@ -108,6 +108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc68b36e3a7277d4ebbda64d1c3cc12d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moveWithDevice: 0
   ppUnderwater: {fileID: 2100000, guid: 337c3be7b45868345b8b9cb9a3ad6211, type: 2}
   fishManager: {fileID: 1571748719}
   particleSystemsWater:
@@ -117,6 +118,7 @@ MonoBehaviour:
   particleSystemsFire:
   - {fileID: 8592489118692507635}
   - {fileID: 4084477443911590385}
+  randomSmoke: {fileID: 2089556481}
 --- !u!1001 &1349823345012978778
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -4,10 +4,15 @@ using UnityEngine;
 
 public class RandomMovement : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public void SetUp()
     {
         StartCoroutine(MoveInBounds());
+    }
+
+    public void CleanUp()
+    {
+        transform.localPosition = Vector3.zero;
+        StopAllCoroutines();
     }
 
     IEnumerator MoveInBounds()
