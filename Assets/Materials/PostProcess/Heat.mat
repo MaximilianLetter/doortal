@@ -33,9 +33,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _NoiseFrequency: 10
-    - _NoiseScale: 3
-    - _NoiseSpeed: 20
-    - _PixelOffset: 0.006
+    - _NoiseScale: 1
+    - _NoiseSpeed: 75
+    - _PixelOffset: 0.005
     - _StencilTest: 3
     m_Colors:
     - _ColorTint: {r: 1, g: 0.08833958, b: 0.06132078, a: 0.19607843}
