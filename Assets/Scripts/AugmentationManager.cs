@@ -44,10 +44,11 @@ public class AugmentationManager : MonoBehaviour
     [Header("Water")]
     public Material ppUnderwater;
     public FishSwarm fishManager;
-    public ParticleSystem[] particleSystems;
+    public ParticleSystem[] particleSystemsWater;
 
     [Header("Fire")]
     public Material ppFire;
+    public ParticleSystem[] particleSystemsFire;
 
     private PostProcess postProcess;
 
@@ -93,7 +94,7 @@ public class AugmentationManager : MonoBehaviour
             case Augmentation.water:
                 postProcess.effectMaterial = ppUnderwater;
                 fishManager.SetUp();
-                foreach (var particles in particleSystems)
+                foreach (var particles in particleSystemsWater)
                 {
                     particles.Play();
                 }
@@ -102,6 +103,10 @@ public class AugmentationManager : MonoBehaviour
 
             case Augmentation.fire:
                 postProcess.effectMaterial = ppFire;
+                foreach (var particles in particleSystemsFire)
+                {
+                    particles.Play();
+                }
                 break;
         }
     }
@@ -111,7 +116,12 @@ public class AugmentationManager : MonoBehaviour
     {
         // TODO heat effects
         fishManager.CleanUp();
-        foreach (var particles in particleSystems)
+        foreach (var particles in particleSystemsWater)
+        {
+            particles.Clear();
+            particles.Stop();
+        }
+        foreach (var particles in particleSystemsFire)
         {
             particles.Clear();
             particles.Stop();
