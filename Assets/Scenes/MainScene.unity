@@ -380,6 +380,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: AugmentationManager
       objectReference: {fileID: 0}
+    - target: {fileID: 8592489118692507632, guid: b82f441867a11394d97e9fe26221d1d9,
+        type: 3}
+      propertyPath: m_Name
+      value: AmberParticles
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b82f441867a11394d97e9fe26221d1d9, type: 3}
 --- !u!1 &165655162 stripped
@@ -388,41 +393,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 165655161}
   m_PrefabAsset: {fileID: 0}
---- !u!84 &265337865
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: stencilTex
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  serializedVersion: 3
-  m_Width: 1600
-  m_Height: 2560
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthFormat: 0
-  m_ColorFormat: 5
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
 --- !u!1 &274518450
 GameObject:
   m_ObjectHideFlags: 0
@@ -561,6 +531,41 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!84 &606777678
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: stencilTex
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  serializedVersion: 3
+  m_Width: 1600
+  m_Height: 2560
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthFormat: 0
+  m_ColorFormat: 5
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -694,7 +699,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_TargetTexture
       value: 
-      objectReference: {fileID: 265337865}
+      objectReference: {fileID: 606777678}
     - target: {fileID: 6067126755542164583, guid: b96608dcc4c8d8946842b3c606d7f15a,
         type: 3}
       propertyPath: m_projectionMatrixMode
@@ -1017,6 +1022,17 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1744301379}
         m_MethodName: DestroyPortal
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1496363470}
+        m_MethodName: Reset
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
