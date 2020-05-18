@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: StencilTrail
+  m_Name: StencilAmber
   m_Shader: {fileID: 4800000, guid: b70374c8d43b91e418667d503f02dd9d, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -27,4 +27,4 @@ Material:
     - _InvFade: 1
     - _StencilTest: 3
     m_Colors:
-    - _TintColor: {r: 0.8679245, g: 0.5994236, b: 0.18422928, a: 0.5882353}
+    - _TintColor: {r: 1, g: 1, b: 1, a: 0.5882353}
