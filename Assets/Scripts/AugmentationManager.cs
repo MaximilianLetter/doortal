@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using UnityEngine;
 
-public enum Augmentation { water, fire };
+public enum Augmentation { water, fire, snow };
 
 public class AugmentationManager : MonoBehaviour
 {
@@ -52,6 +52,10 @@ public class AugmentationManager : MonoBehaviour
     public Material ppFire;
     public ParticleSystem[] particleSystemsFire;
     public RandomMovement randomSmoke;
+
+    [Header("Snow")]
+    public Material ppSnow;
+    public ParticleSystem[] particleSystemsSnow;
 
     private GameObject device;
     private PostProcess postProcess;
@@ -127,6 +131,15 @@ public class AugmentationManager : MonoBehaviour
                     particles.Play();
                 }
                 break;
+
+            case Augmentation.snow:
+                postProcess.effectMaterial = ppSnow;
+                //randomSmoke.SetUp();
+                foreach (var particles in particleSystemsSnow)
+                {
+                    particles.Play();
+                }
+                break;
         }
     }
 
@@ -142,6 +155,11 @@ public class AugmentationManager : MonoBehaviour
             particles.Stop();
         }
         foreach (var particles in particleSystemsFire)
+        {
+            particles.Clear();
+            particles.Stop();
+        }
+        foreach (var particles in particleSystemsSnow)
         {
             particles.Clear();
             particles.Stop();
