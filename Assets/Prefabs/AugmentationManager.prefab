@@ -108,7 +108,7 @@ MonoBehaviour:
   - {fileID: 8592489118692507635}
   - {fileID: 3243494135441909477}
   randomSmoke: {fileID: 820822985391773852}
-  ppSnow: {fileID: 2100000, guid: 3d1cff80155645446929fb83710b5737, type: 2}
+  ppSnow: {fileID: 2100000, guid: e794f11fab16cb149a0ae3b9a78a2e23, type: 2}
   particleSystemsSnow:
   - {fileID: 4084477444429860245}
 --- !u!1001 &827361633142839760
