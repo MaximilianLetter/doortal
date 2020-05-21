@@ -584,7 +584,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 487fa9a442ab4714a868d04c66d6c820, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectMaterial: {fileID: 2100000, guid: c2bf043a4913f1342ba142c36e9ea830, type: 2}
+  effectMaterial: {fileID: 2100000, guid: e794f11fab16cb149a0ae3b9a78a2e23, type: 2}
   stencilCam: {fileID: 1231366417}
 --- !u!114 &175876402
 MonoBehaviour:
@@ -1151,19 +1151,7 @@ Transform:
   m_Father: {fileID: 175876397}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!224 &1017689384 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1074134435325223798, guid: acb1127743386a94a824b433f085c23c,
-    type: 3}
-  m_PrefabInstance: {fileID: 1074134434715506270}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1182236099 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6067126755542164576, guid: b96608dcc4c8d8946842b3c606d7f15a,
-    type: 3}
-  m_PrefabInstance: {fileID: 6067126756512143779}
-  m_PrefabAsset: {fileID: 0}
---- !u!84 &1229566699
+--- !u!84 &713096744
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1198,6 +1186,18 @@ RenderTexture:
     m_WrapW: 1
   m_Dimension: 2
   m_VolumeDepth: 1
+--- !u!224 &1017689384 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1074134435325223798, guid: acb1127743386a94a824b433f085c23c,
+    type: 3}
+  m_PrefabInstance: {fileID: 1074134434715506270}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1182236099 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6067126755542164576, guid: b96608dcc4c8d8946842b3c606d7f15a,
+    type: 3}
+  m_PrefabInstance: {fileID: 6067126756512143779}
+  m_PrefabAsset: {fileID: 0}
 --- !u!20 &1231366417 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 6067126755542164583, guid: b96608dcc4c8d8946842b3c606d7f15a,
@@ -2039,7 +2039,7 @@ PrefabInstance:
         type: 3}
       propertyPath: materials.Array.data[9]
       value: 
-      objectReference: {fileID: 2100000, guid: 3d1cff80155645446929fb83710b5737, type: 2}
+      objectReference: {fileID: 2100000, guid: e794f11fab16cb149a0ae3b9a78a2e23, type: 2}
     - target: {fileID: 3148060875754556913, guid: 21a6c1987f0df15428ca2ad8057072db,
         type: 3}
       propertyPath: m_Name
@@ -2109,6 +2109,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 345877118, guid: b82f441867a11394d97e9fe26221d1d9, type: 3}
+      propertyPath: ppSnow
+      value: 
+      objectReference: {fileID: 2100000, guid: e794f11fab16cb149a0ae3b9a78a2e23, type: 2}
     - target: {fileID: 6291443401498633270, guid: b82f441867a11394d97e9fe26221d1d9,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2242,7 +2246,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_TargetTexture
       value: 
-      objectReference: {fileID: 1229566699}
+      objectReference: {fileID: 713096744}
     - target: {fileID: 6067126755542164583, guid: b96608dcc4c8d8946842b3c606d7f15a,
         type: 3}
       propertyPath: near clip plane
