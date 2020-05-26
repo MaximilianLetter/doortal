@@ -33,7 +33,7 @@ public class ImageToWorld : MonoBehaviour
 
     private Vector2 imgInputSize = new Vector2(640, 480);
     private float scaleUp;
-    private float offset;
+    private Vector2 offset;
 
     void Start()
     {
@@ -59,10 +59,10 @@ public class ImageToWorld : MonoBehaviour
         // NOTE: Aspect ratios are different, there for an offset needs to be calculated
         scaleUp = goal.x / inputDownscaled.x;
 
-        offset = -((inputDownscaled.y * scaleUp) - goal.y) / 2;
+        offset = new Vector2(-((inputDownscaled.y * scaleUp) - goal.y) / 2, 0);
     }
 
-    public void ShowIndicator(bool foundNew, float[] arr)
+    public void ShowIndicator(bool foundNew, Vector2[] arr)
     {
         if (foundNew)
         {
@@ -81,11 +81,12 @@ public class ImageToWorld : MonoBehaviour
                 float maxY = 0;
                 float minY = Screen.height;
 
-                // Convert the result array to a Vector2 List
+                // Scale and offset the result array
                 List<Vector2> door = new List<Vector2>();
                 for (int i = 0; i < 4; i++)
                 {
-                    Vector2 point = new Vector2((arr[i * 2] * scaleUp) + offset, arr[i * 2 + 1] * scaleUp);
+                    //Vector2 point = new Vector2((arr[i * 2] * scaleUp) + offset, arr[i * 2 + 1] * scaleUp);
+                    Vector2 point = (arr[i] * scaleUp) + offset;
                     door.Add(point);
 
                     centroid += point;
@@ -94,12 +95,13 @@ public class ImageToWorld : MonoBehaviour
                     if (point.y > maxY) maxY = point.y;
                     if (point.y < minY) minY = point.y;
                 }
-                door.Add(new Vector2((arr[0] * scaleUp) + offset, arr[1] * scaleUp));
+                centroid *= 0.25f;
+                door.Add((arr[0] * scaleUp) + offset);
 
                 uiLineRenderer.Points = door.ToArray();
 
                 // Set up button and icon
-                doorButton.position = centroid * 0.25f;
+                doorButton.position = centroid;
                 doorButton.sizeDelta = new Vector2(maxX - minX, maxY - minY);
 
                 // If inactive, activate the line renderer and prepare to place an object

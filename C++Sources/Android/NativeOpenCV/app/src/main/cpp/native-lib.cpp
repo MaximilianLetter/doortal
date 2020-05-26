@@ -401,7 +401,7 @@ float getCornerAngle(Point2f p1, Point2f p2, Point2f p3)
     return angle;
 }
 
-// Below code is callable from Unity
+// Resembles the Color32 format type of Unity
 struct Color32
 {
     uchar red;
@@ -410,12 +410,18 @@ struct Color32
     uchar alpha;
 };
 
-extern "C" {
-    bool ProcessImage(void *result, Color32** rawImage, int width, int height, bool rotation)
-    {
-        float* ptr = (float*)result;
+// Resembles the Vector2 data type of Unity
+struct Vector2
+{
+    float x;
+    float y;
+};
 
-        Mat image(height, width, CV_8UC4, *rawImage);
+// Below code is callable from Unity
+extern "C" {
+    bool ProcessImage(Vector2* result, Color32* rawImage, int width, int height, bool rotation)
+    {
+        Mat image(height, width, CV_8UC4, rawImage);
         vector<Point2f> door;
 
         if (rotation) {
@@ -429,14 +435,13 @@ extern "C" {
 
         if (success)
         {
-            ptr[0] = door[0].x;
-            ptr[1] = door[0].y;
-            ptr[2] = door[1].x;
-            ptr[3] = door[1].y;
-            ptr[4] = door[2].x;
-            ptr[5] = door[2].y;
-            ptr[6] = door[3].x;
-            ptr[7] = door[3].y;
+            // Write found door corners into referenced result array
+            for (int i = 0; i < 4; ++i)
+            {
+                Vector2 &vec = result[i];
+                vec.x = door[i].x;
+                vec.y = door[i].y;
+            }
 
             return true;
         }
