@@ -7,9 +7,11 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
 using System.Linq; // TODO what is this?
+using UnityEngine.UI;
 
 public class ImageToWorld : MonoBehaviour
 {
+    public Text debugText;
     public PortalManager portalManager;
 
     public GameObject spawnHelper;
@@ -19,17 +21,20 @@ public class ImageToWorld : MonoBehaviour
     private ARRaycastManager rayManager;
     private Camera cam;
 
+    // Amount of time a marker is hold before the marker disappears
+    public float holdTime;
+    private float foundTime = 0.0f;
+    private bool foundStatus = false;
+
     // These values are not used but could be if a stricter smoothing algorithm is implemented
-    private const int resolution = 1080; // END resolution
-    private const float DIFF_THRESH = resolution / 20;
-    private const float DIFF_THRESH_CANCEL = DIFF_THRESH * 2;
-    private const int COUNTER_THRESH = 2;
-    private List<Vector2> previousDoor = new List<Vector2>();
-    private int prevCounter = 0;
+    //private int resolution = Screen.width; // END resolution
+    //private float DIFF_THRESH = Screen.width / 20;
+    //private float DIFF_THRESH_CANCEL = DIFF_THRESH * 2;
+    //private const int COUNTER_THRESH = 2;
+    //private List<Vector2> previousDoor = new List<Vector2>();
+    //private int prevCounter = 0;
 
     private bool readyToPlace = false;
-    private bool showLines = false;
-    private bool holdLines = false;
 
     private Vector2 imgInputSize = new Vector2(640, 480);
     private float scaleUp;
@@ -43,6 +48,7 @@ public class ImageToWorld : MonoBehaviour
         cam = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
 
         CalcScaling();
+        debugText.text = "";
     }
 
     // Calculate the scaling and offset that has to be put on the points
@@ -66,63 +72,61 @@ public class ImageToWorld : MonoBehaviour
     {
         if (foundNew)
         {
-            // To reduce flickering, dismiss the first result
-            if (!showLines)
+            // Check if last frame something was found to avoid 1 frame flickerings
+            if (!foundStatus)
             {
-                showLines = true;
-                holdLines = true;
+                foundStatus = true;
+                foundTime = 0.0f;
+                return;
             }
-            else
+
+            foundTime = 0.0f;
+
+            // Start values for setting up button and icon on the detected door
+            Vector2 centroid = Vector2.zero;
+            float maxX = 0;
+            float minX = Screen.width;
+            float maxY = 0;
+            float minY = Screen.height;
+
+            // Scale and offset the result array
+            List<Vector2> door = new List<Vector2>();
+            for (int i = 0; i < 4; i++)
             {
-                // Start values for setting up button and icon on the detected door
-                Vector2 centroid = Vector2.zero;
-                float maxX = 0;
-                float minX = Screen.width;
-                float maxY = 0;
-                float minY = Screen.height;
+                //Vector2 point = new Vector2((arr[i * 2] * scaleUp) + offset, arr[i * 2 + 1] * scaleUp);
+                Vector2 point = (arr[i] * scaleUp) + offset;
+                door.Add(point);
 
-                // Scale and offset the result array
-                List<Vector2> door = new List<Vector2>();
-                for (int i = 0; i < 4; i++)
-                {
-                    //Vector2 point = new Vector2((arr[i * 2] * scaleUp) + offset, arr[i * 2 + 1] * scaleUp);
-                    Vector2 point = (arr[i] * scaleUp) + offset;
-                    door.Add(point);
+                centroid += point;
+                if (point.x > maxX) maxX = point.x;
+                if (point.x < minX) minX = point.x;
+                if (point.y > maxY) maxY = point.y;
+                if (point.y < minY) minY = point.y;
+            }
+            centroid *= 0.25f;
+            door.Add((arr[0] * scaleUp) + offset);
 
-                    centroid += point;
-                    if (point.x > maxX) maxX = point.x;
-                    if (point.x < minX) minX = point.x;
-                    if (point.y > maxY) maxY = point.y;
-                    if (point.y < minY) minY = point.y;
-                }
-                centroid *= 0.25f;
-                door.Add((arr[0] * scaleUp) + offset);
+            uiLineRenderer.Points = door.ToArray();
 
-                uiLineRenderer.Points = door.ToArray();
+            // Set up button and icon
+            doorButton.position = centroid;
+            doorButton.sizeDelta = new Vector2(maxX - minX, maxY - minY);
 
-                // Set up button and icon
-                doorButton.position = centroid;
-                doorButton.sizeDelta = new Vector2(maxX - minX, maxY - minY);
-
-                // If inactive, activate the line renderer and prepare to place an object
-                if (!doorIndicator.activeSelf)
-                {
-                    doorIndicator.SetActive(true);
-                    readyToPlace = true;
-                }
+            // If inactive, activate the line renderer and prepare to place an object
+            if (!doorIndicator.activeSelf)
+            {
+                doorIndicator.SetActive(true);
+                readyToPlace = true;
             }
         }
         else
         {
-            // If the previous input was positive hold it for a frame
-            if (holdLines)
-            {
-                holdLines = false;
-            }
-            else
+            foundTime += Time.deltaTime;
+
+            if (foundTime > holdTime)
             {
                 // If no new positive input appears, reset everything
-                showLines = false;
+                foundStatus = false;
 
                 if (doorIndicator.activeSelf)
                 {
@@ -135,51 +139,53 @@ public class ImageToWorld : MonoBehaviour
 
     // NOTE: this function is not used but can be for a better smoothing
     // Test how many differences a proposed door has to the previous door
-    private bool CheckDifferences(List<Vector2> newDoor)
-    {
-        int diffCounter = 0;
+    //private bool CheckDifferences(List<Vector2> newDoor)
+    //{
+    //    int diffCounter = 0;
 
-        if (previousDoor.Count == 0)
-        {
-            return false;
-        }
+    //    if (previousDoor.Count == 0)
+    //    {
+    //        return false;
+    //    }
 
-        for (int i = 0; i < 4; i++)
-        {
-            float difference = Vector2.Distance(previousDoor[i], newDoor[i]);
+    //    for (int i = 0; i < 4; i++)
+    //    {
+    //        float difference = Vector2.Distance(previousDoor[i], newDoor[i]);
 
-            if (difference > DIFF_THRESH)
-            {
-                diffCounter += 1;
+    //        if (difference > DIFF_THRESH)
+    //        {
+    //            diffCounter += 1;
 
-                if (difference > DIFF_THRESH_CANCEL)
-                {
-                    return false;
-                }
-            }
-        }
+    //            if (difference > DIFF_THRESH_CANCEL)
+    //            {
+    //                return false;
+    //            }
+    //        }
+    //    }
 
-        if (diffCounter > 2)
-        {
-            prevCounter += 1;
+    //    if (diffCounter > 2)
+    //    {
+    //        prevCounter += 1;
 
-            if (prevCounter > COUNTER_THRESH)
-            {
-                previousDoor = new List<Vector2>();
-                prevCounter = 0;
-            }
+    //        if (prevCounter > COUNTER_THRESH)
+    //        {
+    //            previousDoor = new List<Vector2>();
+    //            prevCounter = 0;
+    //        }
 
-            return false;
-        }
+    //        return false;
+    //    }
 
-        return true;
-    }
+    //    return true;
+    //}
 
     // Place the object based on the current proposed door
     public void PlaceObject()
     {
+        debugText.text = debugText.text + "" + "TAP";
         if (!readyToPlace) return;
 
+        debugText.text = debugText.text + "" + "READY";
         var points = uiLineRenderer.Points;
 
         List<Vector2> pointList = new List<Vector2>(points);
@@ -209,6 +215,8 @@ public class ImageToWorld : MonoBehaviour
         rayManager.Raycast(bp2, hits, TrackableType.Planes);
         if (hits.Count == 0) return;
         var bp2_v3 = hits[0].pose.position;
+
+        debugText.text = debugText.text + "" + "GROUND HIT";
 
         // Get the center between the bottom points
         Vector3 bottomCenter = Vector3.Lerp(bp1_v3, bp2_v3, 0.5f);
@@ -245,5 +253,6 @@ public class ImageToWorld : MonoBehaviour
 
         // Spawn object
         portalManager.SpawnObject(bottomCenter, rotation, width, height);
+        debugText.text = "DOOR CREATED \n";
     }
 }
