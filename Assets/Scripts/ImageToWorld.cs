@@ -13,6 +13,7 @@ public class ImageToWorld : MonoBehaviour
 {
     public Text debugText;
     public PortalManager portalManager;
+    public TextManager textManager;
 
     public GameObject spawnHelper;
     public GameObject doorIndicator;
@@ -209,11 +210,19 @@ public class ImageToWorld : MonoBehaviour
         List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
         rayManager.Raycast(bp1, hits, TrackableType.Planes);
-        if (hits.Count == 0) return;
+        if (hits.Count == 0)
+        {
+            textManager.ShowNotification(TextContent.noGround);
+            return;
+        }
         var bp1_v3 = hits[0].pose.position;
 
         rayManager.Raycast(bp2, hits, TrackableType.Planes);
-        if (hits.Count == 0) return;
+        if (hits.Count == 0)
+        {
+            textManager.ShowNotification(TextContent.noGround);
+            return;
+        }
         var bp2_v3 = hits[0].pose.position;
 
         debugText.text = debugText.text + "" + "GROUND HIT";

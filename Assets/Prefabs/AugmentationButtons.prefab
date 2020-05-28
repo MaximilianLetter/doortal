@@ -60,13 +60,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.49803922}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.78431374}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 656b13ff4abf69e4ea9580a76225c756, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8376ccae6cd3f90448c9a5a497d4be88, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -203,13 +203,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.49803922}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.78431374}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 15859ca31cf560342bbdc642e85cf5f6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8b382e5ef25eec74bb41208ac542d081, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -346,13 +346,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.49803922}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.78431374}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 872543c336c48f74b89e15434c500c3f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 671022a29af3995459929ce2f2153619, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -441,6 +441,7 @@ GameObject:
   - component: {fileID: 1410882243981248690}
   - component: {fileID: 1410882243981248689}
   - component: {fileID: 1290798640}
+  - component: {fileID: 1410882242056652926}
   m_Layer: 5
   m_Name: AugmentationButtons
   m_TagString: Untagged
@@ -504,6 +505,20 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
 --- !u!114 &1290798640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410882243981248695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fd3c75eb29586e488c31b10e92c8154, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buttonSize: {x: 150, y: 150}
+  activeButtonSize: {x: 300, y: 300}
+--- !u!114 &1410882242056652926
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
