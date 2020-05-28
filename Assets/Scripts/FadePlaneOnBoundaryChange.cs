@@ -7,7 +7,7 @@ public class FadePlaneOnBoundaryChange : MonoBehaviour
 {
     const string k_FadeOffAnim = "FadeOff";
     const string k_FadeOnAnim = "FadeOn";
-    const float k_TimeOut = 4.0f;
+    const float k_TimeOut = 2.0f;
     
     Animator m_Animator;
     ARPlane m_Plane;

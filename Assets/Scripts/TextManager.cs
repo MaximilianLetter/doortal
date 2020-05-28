@@ -4,28 +4,44 @@ using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UI;
 
-public enum TextContent { scanGround, noGround, doorCleared, everythingCleared };
+public enum TextContent {
+    notSupported,
+    scanGround,
+    onboardingComplete,
+    noGround,
+    doorCleared,
+    everythingCleared
+};
 
 public class TextManager : MonoBehaviour
 {
     public float displayTime = 2.0f;
+    public float displayTimeLong = 3.0f;
 
+    public GameObject textObject;
     private Text content;
 
     void Start()
     {
-        content = GetComponent<Text>();
+        content = textObject.GetComponent<Text>();
 
         HideNotification();
     }
 
     public void ShowNotification(TextContent type)
     {
-        gameObject.SetActive(true);
+        textObject.SetActive(true);
         switch (type)
         {
+            case TextContent.notSupported:
+                content.text = "Augmented Reality is not supported on your device.";
+                break;
             case TextContent.scanGround:
                 content.text = "For setup, scan the ground by moving your device until the floor is detected.";
+                break;
+            case TextContent.onboardingComplete:
+                content.text = "Ground was detected.\nGo find a door to open a portal.";
+                Invoke("HideNotification", displayTimeLong);
                 break;
             case TextContent.noGround:
                 content.text = "No ground was found.\nMake sure the ground near the door is detected.";
@@ -37,7 +53,7 @@ public class TextManager : MonoBehaviour
                 break;
             case TextContent.everythingCleared:
                 content.text = "Reset everything, new ground planes need to be detected.";
-                Invoke("HideNotification", displayTime);
+                Invoke("HideNotification", displayTimeLong);
                 break;
         }
 
@@ -46,6 +62,6 @@ public class TextManager : MonoBehaviour
     private void HideNotification()
     {
         content.text = "";
-        gameObject.SetActive(false);
+        textObject.SetActive(false);
     }
 }

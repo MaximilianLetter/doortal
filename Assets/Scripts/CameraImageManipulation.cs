@@ -6,6 +6,7 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
 using System.Runtime.InteropServices;
+using System.Collections;
 
 // NOTE: based on documentation: https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@2.1/manual/cpu-camera-image.html#synchronously-convert-to-grayscale-and-color
 // Some namings seem to be different in documentation and package
@@ -48,13 +49,16 @@ public class CameraImageManipulation : MonoBehaviour
     }
 
 
-    // NOTE: part of the following steps to setup image access on CPU come from
-    // the official AR Foundation documentation. However some functions use
-    // other names than described in the documentation.
-    // e.g. cameraManager.frameReceived instead of cameraManager.cameraFrameReceived
-    // https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@3.1/manual/cpu-camera-image.html
-    void OnEnable()
+    IEnumerator Start()
     {
+        OnboardingManager mng = FindObjectOfType<OnboardingManager>();
+
+        while (!mng.GetComplete())
+        {
+            yield return null;
+        }
+
+        Debug.Log("CameraImageManipulation -> Ready");
         cameraManager = Camera.main.GetComponent<ARCameraManager>();
         cameraManager.frameReceived += OnCameraFrameReceived;
     }
@@ -64,6 +68,11 @@ public class CameraImageManipulation : MonoBehaviour
         cameraManager.frameReceived -= OnCameraFrameReceived;
     }
 
+    // NOTE: part of the following steps to setup image access on CPU come from
+    // the official AR Foundation documentation. However some functions use
+    // other names than described in the documentation.
+    // e.g. cameraManager.frameReceived instead of cameraManager.cameraFrameReceived
+    // https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@3.1/manual/cpu-camera-image.html
     unsafe void OnCameraFrameReceived(ARCameraFrameEventArgs eventArgs)
     {
         XRCameraImage image;
