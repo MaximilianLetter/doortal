@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 8851562511104131956}
   - component: {fileID: 3264317360211532357}
   m_Layer: 0
-  m_Name: AR Feathered Plane
+  m_Name: GroundPlane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -78,7 +78,7 @@ MeshRenderer:
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4c33fdea55313d04e91d9b223c0f9381, type: 2}
+  - {fileID: 2100000, guid: 0f36f4e52ed35d64fb705d74c19a8b6c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -137,7 +137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98c0aebeebc6a2f47b662fe583e56aec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_FeatheringWidth: 0.2
+  m_FeatheringWidth: 0.33
 --- !u!114 &8851562511104131956
 MonoBehaviour:
   m_ObjectHideFlags: 0
