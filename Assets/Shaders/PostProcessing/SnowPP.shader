@@ -1,5 +1,3 @@
-// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
 Shader "Custom/PP/Snow"
 {
 	Properties
@@ -8,10 +6,16 @@ Shader "Custom/PP/Snow"
 		_BlendTex ("Image", 2D) = "" {}
 		_BumpMap ("Normalmap", 2D) = "bump" {}
 
+		// Effect Properties
 		_BlendAmount("Blend Amount", float) = 0.5
 		_EdgeSharpness("Edge Sharpness", float) = 1
 		_Transparency("Transparency", float) = 0.2
 		_Distortion("Distortion", float) = 0.1
+
+		// Noise Properties
+		_NoiseScale("Noise Scale", float) = 1
+		_NoiseFrequency("Noise Frequency", float) = 1
+		_NoiseSpeed("Noise Speed", float) = 1
 
 		_ColorTint("Color Tint", Color) = (1,1,1,1)
 
@@ -33,6 +37,13 @@ Shader "Custom/PP/Snow"
 			#pragma fragment frag
 
 			#include "UnityCG.cginc"
+			#include "noiseSimplex.cginc"
+
+			uniform float _NoiseFrequency, _NoiseScale, _NoiseSpeed;
+
+			uniform float _BlendAmount,_EdgeSharpness, _Transparency, _Distortion;
+
+			uniform fixed4 _ColorTint;
 
 			struct appdata
 			{
@@ -42,28 +53,23 @@ Shader "Custom/PP/Snow"
 
 			struct v2f
 			{
-				float4 pos : POSITION;
 				float2 uv : TEXCOORD0;
+				float4 vertex : SV_POSITION;
+				float4 screenPos : TEXCOORD1;
 			};
 
-			v2f vert(appdata_img v)
+			v2f vert(appdata v)
 			{
 				v2f o;
-				o.pos = UnityObjectToClipPos(v.vertex);
-				o.uv = v.texcoord.xy;
+				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.screenPos = ComputeScreenPos(o.vertex);
+				o.uv = v.uv;
 				return o;
 			}
 
 			sampler2D _MainTex;
 			sampler2D _BlendTex;
 			sampler2D _BumpMap;
-
-			float _BlendAmount;
-			float _EdgeSharpness;
-			float _Transparency;
-			float _Distortion;
-
-			uniform fixed4 _ColorTint;
 
 			sampler2D _StencilTex;
 			int _StencilTest;
@@ -77,10 +83,20 @@ Shader "Custom/PP/Snow"
 
 				float4 blendColor = tex2D(_BlendTex, i.uv);
 
+				// Include Noise
+				float3 sp = float3(i.screenPos.x, i.screenPos.y, 0) * _NoiseFrequency;
+				sp.z += _Time.x * _NoiseSpeed;
+				float noise = _NoiseScale * ((snoise(sp) + 1) / 2);
+
+				float effectUsage = clamp(noise, 0, 1);
+				// NoiseEnd
+
 				blendColor.a = blendColor.a + (_BlendAmount * 2 - 1);
 				blendColor.a = saturate(blendColor.a * _EdgeSharpness - (_EdgeSharpness - 1) * 0.5);
 
-				//Distortion:
+				blendColor.a = blendColor.a * effectUsage;
+
+				// Distortion
 				half2 bump = UnpackNormal(tex2D(_BumpMap, i.uv)).rg;
 				float4 mainColor = tex2D(_MainTex, i.uv + bump * blendColor.a * _Distortion);
 
