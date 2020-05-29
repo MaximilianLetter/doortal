@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using UnityEngine;
 
-public enum Augmentation { water, fire, snow };
+public enum Augmentation { water, fire, snow, pixel };
 
 public class AugmentationManager : MonoBehaviour
 {
@@ -56,6 +56,9 @@ public class AugmentationManager : MonoBehaviour
     [Header("Snow")]
     public Material ppSnow;
     public ParticleSystem[] particleSystemsSnow;
+
+    [Header("Pixel")]
+    public Material ppPixel;
 
     private GameObject device;
     private PostProcess postProcess;
@@ -139,6 +142,10 @@ public class AugmentationManager : MonoBehaviour
                 {
                     particles.Play();
                 }
+                break;
+
+            case Augmentation.pixel:
+                postProcess.effectMaterial = ppPixel;
                 break;
         }
     }

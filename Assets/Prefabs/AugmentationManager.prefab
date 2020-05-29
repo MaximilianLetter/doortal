@@ -111,6 +111,7 @@ MonoBehaviour:
   ppSnow: {fileID: 2100000, guid: e794f11fab16cb149a0ae3b9a78a2e23, type: 2}
   particleSystemsSnow:
   - {fileID: 4084477444429860245}
+  ppPixel: {fileID: 2100000, guid: face4dc45da5e4c4980d9e4b3cb120b3, type: 2}
 --- !u!1001 &827361633142839760
 PrefabInstance:
   m_ObjectHideFlags: 0
