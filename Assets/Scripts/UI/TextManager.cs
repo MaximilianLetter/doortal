@@ -20,21 +20,27 @@ public class TextManager : MonoBehaviour
 
     public GameObject textObject;
     private Text content;
+    private Animator animator;
 
     void Start()
     {
         content = textObject.GetComponent<Text>();
+        animator = textObject.GetComponent<Animator>();
 
         HideNotification();
+        //ClearText();
     }
 
     public void ShowNotification(TextContent type)
     {
         textObject.SetActive(true);
+        CancelInvoke();
+
         switch (type)
         {
             case TextContent.notSupported:
                 content.text = "Augmented Reality is not supported on your device.";
+                Invoke("HideNotification", displayTime);
                 break;
             case TextContent.scanGround:
                 content.text = "For setup, scan the ground by moving your device until the floor is detected.";
@@ -57,11 +63,22 @@ public class TextManager : MonoBehaviour
                 break;
         }
 
+        animator.SetTrigger("BumbIn");
     }
 
-    private void HideNotification()
+    void HideNotification()
     {
+        //animator.SetTrigger("BumbOut");
+
+        //Invoke("ClearText", animator.runtimeAnimatorController.animationClips[1].length);
+
         content.text = "";
         textObject.SetActive(false);
     }
+
+    //void ClearText()
+    //{
+    //    content.text = "";
+    //    textObject.SetActive(false);
+    //}
 }

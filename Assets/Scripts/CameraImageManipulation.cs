@@ -65,7 +65,7 @@ public class CameraImageManipulation : MonoBehaviour
 
     void OnDisable()
     {
-        cameraManager.frameReceived -= OnCameraFrameReceived;
+        if (cameraManager) cameraManager.frameReceived -= OnCameraFrameReceived;
     }
 
     // NOTE: part of the following steps to setup image access on CPU come from
