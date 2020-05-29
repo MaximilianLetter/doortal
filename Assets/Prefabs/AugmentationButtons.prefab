@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 1996202336}
   - component: {fileID: 1996202335}
   - component: {fileID: 1996202334}
-  - component: {fileID: 1996202333}
   m_Layer: 5
   m_Name: Snow
   m_TagString: Untagged
@@ -119,30 +118,17 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1996202333}
-        m_MethodName: ChangeAugmentation
-        m_Mode: 1
+      - m_Target: {fileID: 1290798640}
+        m_MethodName: SetActiveButton
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 2
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &1996202333
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1996202331}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2ca132c78da3d14cbe3062cf36ed6f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  augmentation: 2
 --- !u!1 &1410882243285733932
 GameObject:
   m_ObjectHideFlags: 0
@@ -155,7 +141,6 @@ GameObject:
   - component: {fileID: 1410882243285733928}
   - component: {fileID: 1410882243285733935}
   - component: {fileID: 1410882243285733934}
-  - component: {fileID: 1410882243285733929}
   m_Layer: 5
   m_Name: Fire
   m_TagString: Untagged
@@ -262,30 +247,17 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1410882243285733929}
-        m_MethodName: ChangeAugmentation
-        m_Mode: 1
+      - m_Target: {fileID: 1290798640}
+        m_MethodName: SetActiveButton
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &1410882243285733929
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1410882243285733932}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2ca132c78da3d14cbe3062cf36ed6f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  augmentation: 1
 --- !u!1 &1410882243814268689
 GameObject:
   m_ObjectHideFlags: 0
@@ -298,7 +270,6 @@ GameObject:
   - component: {fileID: 1410882243814268685}
   - component: {fileID: 1410882243814268684}
   - component: {fileID: 1410882243814268691}
-  - component: {fileID: 1410882243814268686}
   m_Layer: 5
   m_Name: Water
   m_TagString: Untagged
@@ -405,9 +376,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1410882243814268686}
-        m_MethodName: ChangeAugmentation
-        m_Mode: 1
+      - m_Target: {fileID: 1290798640}
+        m_MethodName: SetActiveButton
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -416,19 +387,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &1410882243814268686
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1410882243814268689}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2ca132c78da3d14cbe3062cf36ed6f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  augmentation: 0
 --- !u!1 &1410882243981248695
 GameObject:
   m_ObjectHideFlags: 0
@@ -530,7 +488,6 @@ GameObject:
   - component: {fileID: 2991813409406025663}
   - component: {fileID: 2716581702529883844}
   - component: {fileID: 6298817207557648693}
-  - component: {fileID: 972036181040007700}
   m_Layer: 5
   m_Name: Pixel
   m_TagString: Untagged
@@ -637,27 +594,14 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 972036181040007700}
-        m_MethodName: ChangeAugmentation
-        m_Mode: 1
+      - m_Target: {fileID: 1290798640}
+        m_MethodName: SetActiveButton
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 3
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &972036181040007700
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8789769295979905038}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2ca132c78da3d14cbe3062cf36ed6f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  augmentation: 3
