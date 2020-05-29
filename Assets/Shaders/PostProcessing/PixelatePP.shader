@@ -5,6 +5,7 @@
         _MainTex ("Texture", 2D) = "white" {}
         _PixelsX("Pixels X", float) = 64
         _PixelsY("Pixels Y", float) = 64
+        _ColorRange("Color Range", float) = 32
 
         _ColorTint("Color Tint", Color) = (1,1,1,1)
 
@@ -27,7 +28,7 @@
 
                 #include "UnityCG.cginc"
 
-                uniform float _PixelsX, _PixelsY;
+                uniform float _PixelsX, _PixelsY, _ColorRange;
                 uniform fixed4 _ColorTint;
 
             struct appdata
@@ -68,6 +69,8 @@
                 uv.y = round(uv.y) / _PixelsY;
 
                 fixed4 col = tex2D(_MainTex, uv);
+                col *= _ColorRange;
+                col = round(col) / _ColorRange;
 
                 col = half4((col.rgb * (1 - _ColorTint.a) + _ColorTint.rgb * _ColorTint.a), 1);
 
