@@ -7,6 +7,7 @@
         _PixelsY("Pixels Y", float) = 64
         _ColorRange("Color Range", float) = 32
 
+        _Saturation("Saturation", float) = 1.0
         _ColorTint("Color Tint", Color) = (1,1,1,1)
 
         _StencilTex("Texture", 2D) = "white" {}
@@ -28,7 +29,7 @@
 
                 #include "UnityCG.cginc"
 
-                uniform float _PixelsX, _PixelsY, _ColorRange;
+                uniform float _PixelsX, _PixelsY, _ColorRange, _Saturation;
                 uniform fixed4 _ColorTint;
 
             struct appdata
@@ -72,7 +73,13 @@
                 col *= _ColorRange;
                 col = round(col) / _ColorRange;
 
-                col = half4((col.rgb * (1 - _ColorTint.a) + _ColorTint.rgb * _ColorTint.a), 1);
+                //col = half4((col.rgb * (1 - _ColorTint.a) + _ColorTint.rgb * _ColorTint.a), 1);
+
+                // Increase saturation
+                float luma = dot(col.rgb, float3(0.2126729, 0.7151522, 0.0721750));
+                float3 sat_col = luma.xxx + _Saturation.xxx * (col.rgb - luma.xxx);
+
+                col = half4(sat_col, 1);
 
                 return col;
             }

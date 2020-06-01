@@ -145,6 +145,9 @@ public class AugmentationManager : MonoBehaviour
                 break;
 
             case Augmentation.pixel:
+                float pixelateVal = 20;
+                ppPixel.SetFloat("_PixelsX", Screen.width / pixelateVal);
+                ppPixel.SetFloat("_PixelsY", Screen.height / pixelateVal);
                 postProcess.effectMaterial = ppPixel;
                 break;
         }
