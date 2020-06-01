@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class SwipeManager : MonoBehaviour
 {
-    private float minSwipeDist = 50.0f;
+    public float minSwipeDist = 25.0f;
 
     private float startTime;
     private Vector2 startPos;
@@ -33,7 +33,7 @@ public class SwipeManager : MonoBehaviour
 
                 case TouchPhase.Ended:
                     float swipeTime = Time.time - startTime;
-                    float swipeDist = (touch.position - startPos).magnitude;
+                    float swipeDist = Mathf.Abs(touch.position.x - startPos.x);
 
                     if (swipePossible && (swipeDist > minSwipeDist))
                     {

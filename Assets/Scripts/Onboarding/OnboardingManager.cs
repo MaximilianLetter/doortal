@@ -39,6 +39,9 @@ public class OnboardingManager : MonoBehaviour
         planeManager = FindObjectOfType<ARPlaneManager>();
         planeManager.planePrefab = onboardingPlanePrefab;
 
+        // Wait a second so that the camera is showing
+        yield return new WaitForSeconds(1);
+
         textManager.ShowNotification(TextContent.scanGround);
 
         // Wait the minimum of 1 second before checking
