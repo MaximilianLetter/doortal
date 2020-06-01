@@ -23,8 +23,24 @@ Material:
         m_Texture: {fileID: 2800000, guid: aee72e1abdd28b04b93fd8d00d85bd76, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _BlendTex1:
+        m_Texture: {fileID: 2800000, guid: aee72e1abdd28b04b93fd8d00d85bd76, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BlendTex2:
+        m_Texture: {fileID: 2800000, guid: 210743b88c99bcf45b28c3a4a4a3e178, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BumpMap:
         m_Texture: {fileID: 2800000, guid: fdcf249e02839c443857aba906ab98c9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap1:
+        m_Texture: {fileID: 2800000, guid: fdcf249e02839c443857aba906ab98c9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BumpMap2:
+        m_Texture: {fileID: 2800000, guid: 065247d136abaa042a330ab6a7b030fc, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -38,10 +54,10 @@ Material:
     m_Floats:
     - _BlendAmount: 0.2
     - _Distortion: 0.3
-    - _EdgeSharpness: 1
+    - _EdgeSharpness: 1.5
     - _NoiseFrequency: 0.75
     - _NoiseScale: 0.5
-    - _NoiseSpeed: 10
+    - _NoiseSpeed: 5
     - _StencilTest: 3
     - _Transparency: 0.2
     m_Colors:

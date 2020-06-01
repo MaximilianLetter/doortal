@@ -3,8 +3,10 @@ Shader "Custom/PP/Snow"
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
-		_BlendTex ("Image", 2D) = "" {}
-		_BumpMap ("Normalmap", 2D) = "bump" {}
+		_BlendTex1 ("Texture 1", 2D) = "" {}
+		_BlendTex2 ("Texture 2", 2D) = "" {}
+		_BumpMap1 ("Normalmap 1", 2D) = "bump" {}
+		_BumpMap2 ("Normalmap 2", 2D) = "bump" {}
 
 		// Effect Properties
 		_BlendAmount("Blend Amount", float) = 0.5
@@ -68,8 +70,12 @@ Shader "Custom/PP/Snow"
 			}
 
 			sampler2D _MainTex;
-			sampler2D _BlendTex;
-			sampler2D _BumpMap;
+
+			sampler2D _BlendTex1;
+			sampler2D _BumpMap1;
+
+			sampler2D _BlendTex2;
+			sampler2D _BumpMap2;
 
 			sampler2D _StencilTex;
 			int _StencilTest;
@@ -81,8 +87,6 @@ Shader "Custom/PP/Snow"
 					return tex2D(_MainTex, i.uv);
 				}
 
-				float4 blendColor = tex2D(_BlendTex, i.uv);
-
 				// Include Noise
 				float3 sp = float3(i.screenPos.x, i.screenPos.y, 0) * _NoiseFrequency;
 				sp.z += _Time.x * _NoiseSpeed;
@@ -91,13 +95,16 @@ Shader "Custom/PP/Snow"
 				float effectUsage = clamp(noise, 0, 1);
 				// NoiseEnd
 
+				float4 blendColor = lerp(tex2D(_BlendTex1, i.uv), tex2D(_BlendTex2, i.uv), effectUsage);
+
 				blendColor.a = blendColor.a + (_BlendAmount * 2 - 1);
 				blendColor.a = saturate(blendColor.a * _EdgeSharpness - (_EdgeSharpness - 1) * 0.5);
 
-				blendColor.a = blendColor.a * effectUsage;
+				//blendColor.a = blendColor.a * effectUsage;
 
 				// Distortion
-				half2 bump = UnpackNormal(tex2D(_BumpMap, i.uv)).rg;
+				half2 bump = lerp(UnpackNormal(tex2D(_BumpMap1, i.uv)).rg, UnpackNormal(tex2D(_BumpMap2, i.uv)).rg, effectUsage);
+
 				float4 mainColor = tex2D(_MainTex, i.uv + bump * blendColor.a * _Distortion);
 
 				mainColor = float4((mainColor.rgb * (1 - _ColorTint.a) + _ColorTint.rgb * _ColorTint.a), 1);
