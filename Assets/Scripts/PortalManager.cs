@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
+using UnityEngine.XR.ARFoundation;
+using UnityEngine.XR.ARSubsystems;
 
 public class PortalManager : MonoBehaviour
 {
@@ -18,8 +21,10 @@ public class PortalManager : MonoBehaviour
     public Material[] materials;
 
     private AugmentationManager augmentationManager;
+    private ARAnchorManager anchorManager;
 
     private GameObject activePortal;
+    private ARAnchor activeAnchor;
     private bool inside;
     private bool created;
 
@@ -30,6 +35,7 @@ public class PortalManager : MonoBehaviour
 
         SetMaterials(false);
         augmentationManager = augmentationCenter.GetComponent<AugmentationManager>();
+        anchorManager = FindObjectOfType<ARAnchorManager>();
     }
 
     // Hack for editor because of missing reset after play mode
@@ -73,12 +79,24 @@ public class PortalManager : MonoBehaviour
 
     public void SpawnObject(Vector3 position, Quaternion rotation, float width, float height)
     {
+        // Create an anchor that can be tracked from now on
+        ARAnchor newAnchor = anchorManager.AddAnchor(new Pose(position, rotation));
+        if (activeAnchor != null)
+        {
+            anchorManager.RemoveAnchor(activeAnchor);
+        }
+        activeAnchor = newAnchor;
+
         if (activePortal == null)
         {
-            GameObject obj = Instantiate(objectToSpawn, position, rotation);
+            GameObject obj = Instantiate(objectToSpawn);
+            obj.transform.parent = activeAnchor.transform;
+            obj.transform.localPosition = Vector3.zero;
+            obj.transform.rotation = rotation;
+
             activePortal = obj;
 
-            // Set the augmentationCenter active and place it in the door
+            // Set the augmentationCenter active and place behind the door
             if (!inside)
             {
                 Vector3 offset = rotation * new Vector3(0, 0, 1);
@@ -154,6 +172,12 @@ public class PortalManager : MonoBehaviour
             // Since only the portal window is scaled, the parent object needs to be destroyed
             Destroy(obj.transform.parent.gameObject);
 
+            // Remove the active anchor
+            if (activeAnchor != null)
+            {
+                anchorManager.RemoveAnchor(activeAnchor);
+            }
+
             // Deactivate the augmentationCenter
             augmentationCenter.transform.parent = null;
 
@@ -175,11 +199,30 @@ public class PortalManager : MonoBehaviour
         StartCoroutine(ScaleOverTime(portalWindow, spawnTime, Vector3.zero));
     }
 
+    /// <summary>
+    /// Replaces the current portal, creates a new AR Anchor and sets new position, rotation and scale.
+    /// </summary>
+    /// <param name="position">Position of a new AR Anchor that holds the position of the portal.</param>
+    /// <param name="rotation">Rotation of the portal.</param>
+    /// <param name="width">Width of the portal window.</param>
+    /// <param name="height">Height of the portal window.</param>
+    /// <returns>No return value.</returns>
     private void ReplacePortal(Vector3 position, Quaternion rotation, float width, float height)
     {
-        activePortal.transform.SetPositionAndRotation(position, rotation);
+        // Create an anchor that can be tracked from now on
+        ARAnchor newAnchor = anchorManager.AddAnchor(new Pose(position, rotation));
+        if (activeAnchor != null)
+        {
+            anchorManager.RemoveAnchor(activeAnchor);
+        }
+        activeAnchor = newAnchor;
+
+        activePortal.transform.parent = activeAnchor.transform;
+        activePortal.transform.localPosition = Vector3.zero;
+        activePortal.transform.rotation = rotation;
 
         GameObject portalWindow = activePortal.transform.Find("PortalWindow").gameObject;
+        portalWindow.transform.localPosition = new Vector3(0, height / 2, 0);
         portalWindow.transform.localScale = new Vector3(width, height, 1);
     }
 }
