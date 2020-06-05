@@ -44,7 +44,10 @@ public class PortalManager : MonoBehaviour
         SetMaterials(false);
     }
 
-    // Function called from portals script when triggering walk through
+    /// <summary>
+    /// Function called from portals script when walking in or out. Modifing augmentation effects based on walking in or out.
+    /// </summary>
+    /// <returns>No return value.</returns>
     public void EnterPortal()
     {
         inside = !inside;
@@ -67,6 +70,11 @@ public class PortalManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets the material stencil value for all assigned materials to either true or false.
+    /// </summary>
+    /// <param name="fullRender">Shall material value be true or false.</param>
+    /// <returns>No return value.</returns>
     private void SetMaterials(bool fullRender)
     {
         var stencilTest = fullRender ? CompareFunction.NotEqual : CompareFunction.Equal;
@@ -77,6 +85,15 @@ public class PortalManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Spawn a portal at the given position. If a portal already exists, destroy the old one and create a new one.
+    /// If the new portal is close to the existing portal, set new values for the existing portal.
+    /// </summary>
+    /// <param name="position">Position of a new AR Anchor that holds the position of the portal.</param>
+    /// <param name="rotation">Rotation of the portal.</param>
+    /// <param name="width">Width of the portal window.</param>
+    /// <param name="height">Height of the portal window.</param>
+    /// <returns>No return value.</returns>
     public void SpawnObject(Vector3 position, Quaternion rotation, float width, float height)
     {
         // Create an anchor that can be tracked from now on
@@ -138,6 +155,13 @@ public class PortalManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Scales the given object over the given time. In the end it receives the given scale. If the given Scale is zero, the currently active portal gets destroyed.
+    /// </summary>
+    /// <param name="obj">Object to be scaled.</param>
+    /// <param name="time">Length of coroutine.</param>
+    /// <param name="scale">Scale that holds the width and the height the object shall receive. If zero, the currently active portal gets destroyed.</param>
+    /// <returns>No return value.</returns>
     private IEnumerator ScaleOverTime(GameObject obj, float time, Vector3 scale)
     {
         bool destroy = (scale == Vector3.zero);
@@ -190,6 +214,10 @@ public class PortalManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Destroys the current portal by calling a coroutine shrinking and deleting the object.
+    /// </summary>
+    /// <returns>No return value.</returns>
     public void DestroyPortal()
     {
         if (activePortal == null) return;
