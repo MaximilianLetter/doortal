@@ -11,9 +11,9 @@ using UnityEngine.UI;
 
 public class ImageToWorld : MonoBehaviour
 {
-    public Text debugText;
     public PortalManager portalManager;
     public TextManager textManager;
+    //public GameObject helperQuad;
 
     public GameObject spawnHelper;
     public GameObject doorIndicator;
@@ -48,8 +48,9 @@ public class ImageToWorld : MonoBehaviour
         rayManager = FindObjectOfType<ARRaycastManager>();
         cam = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
 
+        //helperQuad.SetActive(false);
+
         CalcScaling();
-        debugText.text = "";
     }
 
     // Calculate the scaling and offset that has to be put on the points
@@ -183,10 +184,8 @@ public class ImageToWorld : MonoBehaviour
     // Place the object based on the current proposed door
     public void PlaceObject()
     {
-        debugText.text = debugText.text + "" + "TAP";
         if (!readyToPlace) return;
 
-        debugText.text = debugText.text + "" + "READY";
         var points = uiLineRenderer.Points;
 
         List<Vector2> pointList = new List<Vector2>(points);
@@ -216,6 +215,7 @@ public class ImageToWorld : MonoBehaviour
             return;
         }
         var bp1_v3 = hits[0].pose.position;
+        Debug.Log("Ground Rotation1 " + hits[0].pose.rotation.eulerAngles);
 
         rayManager.Raycast(bp2, hits, TrackableType.Planes);
         if (hits.Count == 0)
@@ -224,14 +224,18 @@ public class ImageToWorld : MonoBehaviour
             return;
         }
         var bp2_v3 = hits[0].pose.position;
+        Debug.Log("Ground Rotation2 " + hits[0].pose.rotation.eulerAngles);
 
-        debugText.text = debugText.text + "" + "GROUND HIT";
+        // Unify the height of both points
+        float unifyY = (bp1_v3.y + bp2_v3.y) / 2;
+        bp1_v3.y = unifyY;
+        bp2_v3.y = unifyY;
 
         // Get the center between the bottom points
         Vector3 bottomCenter = Vector3.Lerp(bp1_v3, bp2_v3, 0.5f);
+        Debug.Log("ImageToWorld, bottomCenter: " + bottomCenter);
 
         // Calculate rotation
-        Quaternion groundRotation = hits[0].pose.rotation;
         Vector3 direction = (bp1_v3 - bp2_v3).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         Quaternion rotation = lookRotation * Quaternion.Euler(0, 90.0f, 0);
@@ -247,21 +251,47 @@ public class ImageToWorld : MonoBehaviour
 
         ray = cam.ScreenPointToRay(tp1);
         Physics.Raycast(ray, out hit);
+        Debug.Log("top raycast1: " + hit.point);
         tp1_v3 = hit.point;
 
         ray = cam.ScreenPointToRay(tp2);
         Physics.Raycast(ray, out hit);
+        Debug.Log("top raycast2: " + hit.point);
         tp2_v3 = hit.point;
 
-        Vector3 topCenter = Vector3.Lerp(tp1_v3, tp2_v3, 0.5f);
+        Vector3 topCenter = Vector3.zero;
+
+        // Raycast did not hit the correct plane and is therefor not usable
+        if (tp1_v3 == Vector3.zero || tp2_v3 == Vector3.zero)
+        {
+            Debug.Log("RAYCAST DID NOT HIT");
+        }
+        else
+        {
+            topCenter = Vector3.Lerp(tp1_v3, tp2_v3, 0.5f);
+        }
+        Debug.Log("ImageToWorld, topCenter: " + topCenter);
+
+
+        //Vector3 botToTopdir = (tp1_v3 - tp2_v3).normalized;
+        //Quaternion botToTopRot = Quaternion.LookRotation(direction);
+        //Debug.Log("Bottom to Top Rot " + botToTopRot.eulerAngles);
+
+        //float angleY = botToTopRot.eulerAngles.y;
+        //float angleDiffY = angleY > 180 ? 360 - angleY : angleY;
+
+        //rotation = Quaternion.Euler(rotation.eulerAngles + new Vector3(0, angleDiffY, 0));
+        //Debug.Log("rotation afterwards" + rotation.eulerAngles);
+        // TODO -> rotation von boden zu oben ist meist 340° oder ähnliches -> differenz zu 0 / 360 sollte als rotation aufgenommen werden
 
         float height = Vector3.Distance(bottomCenter, topCenter);
+        Debug.Log("ImageToWorld, height: " + height);
 
         // Destroy the used quad
         Destroy(quad);
+        //helperQuad.SetActive(false);
 
         // Spawn object
         portalManager.SpawnObject(bottomCenter, rotation, width, height);
-        debugText.text = "DOOR CREATED \n";
     }
 }
