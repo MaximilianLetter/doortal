@@ -5,7 +5,7 @@ using UnityEngine;
 public class ImageToWorldDev : MonoBehaviour
 {
     public Transform spawnTransform;
-    public PortalManager portalManager;
+    public PortalManagerDev portalManager;
 
     private const float width = 1.0f;
     private const float height = 2.2f;
