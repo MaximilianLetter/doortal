@@ -215,7 +215,7 @@ public class ImageToWorld : MonoBehaviour
             return;
         }
         var bp1_v3 = hits[0].pose.position;
-        Debug.Log("Ground Rotation1 " + hits[0].pose.rotation.eulerAngles);
+        Debug.Log("Ground Rotation1 " + hits[hits.Count - 1].pose.rotation.eulerAngles);
 
         rayManager.Raycast(bp2, hits, TrackableType.Planes);
         if (hits.Count == 0)
@@ -224,7 +224,7 @@ public class ImageToWorld : MonoBehaviour
             return;
         }
         var bp2_v3 = hits[0].pose.position;
-        Debug.Log("Ground Rotation2 " + hits[0].pose.rotation.eulerAngles);
+        Debug.Log("Ground Rotation2 " + hits[hits.Count - 1].pose.rotation.eulerAngles);
 
         // Unify the height of both points
         float unifyY = (bp1_v3.y + bp2_v3.y) / 2;
