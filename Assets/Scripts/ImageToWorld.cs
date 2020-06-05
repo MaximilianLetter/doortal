@@ -240,6 +240,31 @@ public class ImageToWorld : MonoBehaviour
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         Quaternion rotation = lookRotation * Quaternion.Euler(0, 90.0f, 0);
 
+        // Check if there are really points behind the detected rectangle to verify it is a door
+        // NOTE: First crappy version
+        ARPointCloud cloud = FindObjectOfType<ARPointCloud>();
+        Vector3 camPos = Camera.main.transform.position;
+        float distToDoor = Vector3.Distance(camPos, bottomCenter);
+        float minOffset = 0.5f;
+        bool spaceBehindDoor = false;
+        int count = 0;
+        foreach (Vector3 point in cloud.positions)
+        {
+            count++;
+            if (Vector3.Distance(camPos, point) > distToDoor + minOffset)
+            {
+                Debug.Log("THERE IS A FURTHER POINT");
+                spaceBehindDoor = true;
+                break;
+            }
+        }
+        if (!spaceBehindDoor)
+        {
+            textManager.ShowNotification(TextContent.noRealDoor);
+            return;
+        }
+        Debug.Log("POINTS: " + count);
+
         // Get width for object
         float width = Vector3.Distance(bp1_v3, bp2_v3);
 
