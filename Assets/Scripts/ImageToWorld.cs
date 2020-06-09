@@ -13,9 +13,13 @@ public class ImageToWorld : MonoBehaviour
 {
     public PortalManager portalManager;
     public TextManager textManager;
-    //public GameObject helperQuad;
 
-    public GameObject spawnHelper;
+    public GameObject placementHelpers;
+    private GameObject placementPlane;
+    private GameObject placementCollider;
+
+
+
     public GameObject doorIndicator;
     private UILineRenderer uiLineRenderer;
     private RectTransform doorButton;
@@ -48,7 +52,10 @@ public class ImageToWorld : MonoBehaviour
         rayManager = FindObjectOfType<ARRaycastManager>();
         cam = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
 
-        //helperQuad.SetActive(false);
+        // Extract the two placement helper objects from parent
+        placementPlane = placementHelpers.transform.GetChild(0).gameObject;
+        placementCollider = placementHelpers.transform.GetChild(1).gameObject;
+        placementHelpers.SetActive(false);
 
         CalcScaling();
     }
@@ -186,6 +193,8 @@ public class ImageToWorld : MonoBehaviour
     {
         if (!readyToPlace) return;
 
+        Debug.Log("----------------------------------------------------------");
+
         var points = uiLineRenderer.Points;
 
         List<Vector2> pointList = new List<Vector2>(points);
@@ -215,7 +224,7 @@ public class ImageToWorld : MonoBehaviour
             return;
         }
         var bp1_v3 = hits[0].pose.position;
-        Debug.Log("Ground Rotation1 " + hits[hits.Count - 1].pose.rotation.eulerAngles);
+        //Debug.Log("Ground Rotation1 " + hits[hits.Count - 1].pose.rotation.eulerAngles);
 
         rayManager.Raycast(bp2, hits, TrackableType.Planes);
         if (hits.Count == 0)
@@ -224,7 +233,7 @@ public class ImageToWorld : MonoBehaviour
             return;
         }
         var bp2_v3 = hits[0].pose.position;
-        Debug.Log("Ground Rotation2 " + hits[hits.Count - 1].pose.rotation.eulerAngles);
+        //Debug.Log("Ground Rotation2 " + hits[hits.Count - 1].pose.rotation.eulerAngles);
 
         // Unify the height of both points
         float unifyY = (bp1_v3.y + bp2_v3.y) / 2;
@@ -233,43 +242,52 @@ public class ImageToWorld : MonoBehaviour
 
         // Get the center between the bottom points
         Vector3 bottomCenter = Vector3.Lerp(bp1_v3, bp2_v3, 0.5f);
-        Debug.Log("ImageToWorld, bottomCenter: " + bottomCenter);
+        //Debug.Log("ImageToWorld, bottomCenter: " + bottomCenter);
 
         // Calculate rotation
         Vector3 direction = (bp1_v3 - bp2_v3).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         Quaternion rotation = lookRotation * Quaternion.Euler(0, 90.0f, 0);
 
-        // Check if there are really points behind the detected rectangle to verify it is a door
-        // NOTE: First crappy version
-        ARPointCloud cloud = FindObjectOfType<ARPointCloud>();
-        Vector3 camPos = Camera.main.transform.position;
-        float distToDoor = Vector3.Distance(camPos, bottomCenter);
-        float minOffset = 0.5f;
-        bool spaceBehindDoor = false;
-        int count = 0;
-        foreach (Vector3 point in cloud.positions)
+        // NOTE TO TEST
+        //Quaternion camToDoorRotation = Quaternion.LookRotation((bottomCenter - Camera.main.transform.position).normalized);
+
+        // doesnt help since its always close to 1, but why 
+        Vector3 camDir = Camera.main.transform.forward;
+        //float dot = Vector3.Dot(camDir, (bottomCenter - Camera.main.transform.position).normalized);
+        float dot = Vector3.Dot(camDir, rotation * Vector3.forward);
+        Debug.Log("DOT: " + dot);
+        if (dot < 0)
         {
-            count++;
-            if (Vector3.Distance(camPos, point) > distToDoor + minOffset)
-            {
-                Debug.Log("THERE IS A FURTHER POINT");
-                spaceBehindDoor = true;
-                break;
-            }
+            Debug.Log("FLIP BY DOT PRODUCT");
+            // If portal is facing away, flip it
+            rotation *= Quaternion.Euler(0, 180, 0);
         }
-        if (!spaceBehindDoor)
-        {
-            textManager.ShowNotification(TextContent.noRealDoor);
-            return;
-        }
-        Debug.Log("POINTS: " + count);
+        Debug.Log(rotation.eulerAngles);
+
+        //Vector3 camToPoint = Quaternion.LookRotation((bottomCenter - Camera.main.transform.position).normalized).eulerAngles;
+        //Debug.Log("ROTATION CAMERA TO POINT");
+        //Debug.Log(camToPoint);
+        //if (camToPoint.y > 180 && rotation.y > 180)
+        //{
+        //    Debug.Log("Rotation flip");
+        //    Vector3 rotEuler = rotation.eulerAngles;
+        //    rotation = Quaternion.Euler(rotEuler.x, rotEuler.y - 180, rotEuler.z);
+        //}
 
         // Get width for object
         float width = Vector3.Distance(bp1_v3, bp2_v3);
 
+        // Activate placement helper objects
+        // The helper quad is part of the placement helpers
+        // NOTE cam to door is pointing towards bottom point -> sehr schräg nach unten -> müsste in die mitte zeigen oder y wert auslassen bzw. mit rotation.eulerAngles.y ersetzen!
+        placementHelpers.SetActive(true);
+        placementHelpers.transform.SetPositionAndRotation(bottomCenter, rotation);
+
+        // Since the following raycasts are physics based, sync the placement helper transforms
+        Physics.SyncTransforms();
+
         // Calulate height with help of a vertical quad that can be raycasted against
-        GameObject quad = Instantiate(spawnHelper, bottomCenter, rotation);
         RaycastHit hit;
         Vector3 tp1_v3, tp2_v3;
         Ray ray;
@@ -297,6 +315,11 @@ public class ImageToWorld : MonoBehaviour
         }
         Debug.Log("ImageToWorld, topCenter: " + topCenter);
 
+        //Debug.Log("----");
+        //Debug.Log(rotation.eulerAngles);
+        //Debug.Log(Camera.main.transform.rotation.eulerAngles);
+        //Debug.Log(Quaternion.LookRotation(Camera.main.transform.position - bottomCenter).eulerAngles);
+
 
         //Vector3 botToTopdir = (tp1_v3 - tp2_v3).normalized;
         //Quaternion botToTopRot = Quaternion.LookRotation(direction);
@@ -313,8 +336,80 @@ public class ImageToWorld : MonoBehaviour
         Debug.Log("ImageToWorld, height: " + height);
 
         // Destroy the used quad
-        Destroy(quad);
+        //Destroy(quad);
         //helperQuad.SetActive(false);
+
+
+
+        // Check if there are really points behind the detected rectangle to verify it is a door
+        // NOTE: First crappy version
+        ARPointCloud cloud = FindObjectOfType<ARPointCloud>();
+
+        // Scale and position the collider box according to the measured height
+        placementCollider.transform.localPosition = new Vector3(0, height / 2, 0);
+        placementCollider.transform.localScale = new Vector3(width, height, 1);
+
+        // Sync the transform changes to be able to use the collider function
+        Physics.SyncTransforms();
+
+        //GameObject colliderObj = Instantiate(spawnBoxCollider, boxPosition, rotation);
+        //var colliderObj = spawnBoxCollider;
+        //colliderObj.transform.SetPositionAndRotation(boxPosition, rotation);
+        //colliderObj.transform.localScale = new Vector3(width, height, 1);
+        
+        // TEST
+        // doesnt seem to work
+        // NOTE: sometimes the box is in the wrong direction!
+
+        //Physics.SyncTransforms();
+
+        // Get the collider attached to the child object
+        Collider collider = placementCollider.GetComponentInChildren<Collider>();
+        
+        int count = 0;
+        bool spaceBehindDoor = false;
+        foreach (Vector3 point in cloud.positions)
+        {
+            count++;
+            if (collider.bounds.Contains(point))
+            {
+                Debug.Log("THERE IS A FURTHER POINT");
+                spaceBehindDoor = true;
+                break;
+            }
+        }
+        Debug.Log("POINTS: " + count);
+        if (!spaceBehindDoor)
+        {
+            Debug.Log("no fitting point found");
+            textManager.ShowNotification(TextContent.noRealDoor);
+            return;
+        }
+
+        // The use of the placement helpers is done, deactivate them
+        //placementHelpers.SetActive(false);
+
+        //Vector3 camPos = Camera.main.transform.position;
+        //float distToDoor = Vector3.Distance(camPos, bottomCenter);
+        //float minOffset = 0.5f;
+        //bool spaceBehindDoor = false;
+        //int count = 0;
+        //foreach (Vector3 point in cloud.positions)
+        //{
+        //    count++;
+        //    if (Vector3.Distance(camPos, point) > distToDoor + minOffset)
+        //    {
+        //        Debug.Log("THERE IS A FURTHER POINT");
+        //        spaceBehindDoor = true;
+        //        break;
+        //    }
+        //}
+        //if (!spaceBehindDoor)
+        //{
+        //    textManager.ShowNotification(TextContent.noRealDoor);
+        //    return;
+        //}
+
 
         // Spawn object
         portalManager.SpawnObject(bottomCenter, rotation, width, height);
