@@ -171,10 +171,8 @@ public class ImageToWorld : MonoBehaviour
                 door.Add((arr[i] * scaleUp) + offset);
             }
 
-            Debug.Log("came here");
             readyToPlace = true;
             PlaceMarker(door);
-            Debug.Log("came here after placing");
         }
         else
         {
@@ -194,8 +192,6 @@ public class ImageToWorld : MonoBehaviour
     private void PlaceMarker(List<Vector2> points)
     {
         if (!readyToPlace) return;
-
-        Debug.Log("came to PlaceMarker() function start");
 
         // Order by y so top points and bottom points can be seperated
         // pointList.Sort((a, b) => a.y.CompareTo(b.y));
@@ -242,10 +238,10 @@ public class ImageToWorld : MonoBehaviour
 
         Vector3 camDir = cam.transform.forward;
         float dot = Vector3.Dot(camDir, rotation * Vector3.forward);
-        Debug.Log("DOT: " + dot);
+        //Debug.Log("DOT: " + dot);
         if (dot < 0)
         {
-            Debug.Log("FLIP BY DOT PRODUCT");
+            //Debug.Log("FLIP BY DOT PRODUCT");
             // If portal is facing away, flip it
             rotation *= Quaternion.Euler(0, 180, 0);
         }
@@ -284,10 +280,10 @@ public class ImageToWorld : MonoBehaviour
         {
             topCenter = Vector3.Lerp(tp1_v3, tp2_v3, 0.5f);
         }
-        Debug.Log("ImageToWorld, topCenter: " + topCenter);
+        //Debug.Log("ImageToWorld, topCenter: " + topCenter);
 
         float height = Vector3.Distance(bottomCenter, topCenter);
-        Debug.Log("ImageToWorld, height: " + height);
+        //Debug.Log("ImageToWorld, height: " + height);
 
         // Check if there are really points behind the detected rectangle to verify it is a door
         // NOTE: First crappy version
@@ -325,8 +321,7 @@ public class ImageToWorld : MonoBehaviour
         //    return;
         //}
 
-        Debug.Log("ready to set the world marker");
-        Debug.Log(doorMarker);
+        //Debug.Log("ready to set the world marker");
 
         // Set object position, rotation and scale
         doorMarker.transform.SetPositionAndRotation(bottomCenter, rotation);

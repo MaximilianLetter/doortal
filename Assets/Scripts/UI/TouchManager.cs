@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SwipeManager : MonoBehaviour
+public class TouchManager : MonoBehaviour
 {
     public float minSwipeDist = 25.0f;
 
@@ -10,8 +10,11 @@ public class SwipeManager : MonoBehaviour
     private Vector2 startPos;
 
     private bool swipePossible;
+    private bool singleTouchPossible;
 
     public ButtonManager btnManager;
+    public PortalManager portalManager;
+    //public ImageToWorld imgToWorld;
 
     private void Update()
     {
@@ -29,6 +32,7 @@ public class SwipeManager : MonoBehaviour
 
                 case TouchPhase.Stationary:
                     swipePossible = false;
+                    singleTouchPossible = true;
                     break;
 
                 case TouchPhase.Ended:
@@ -42,6 +46,11 @@ public class SwipeManager : MonoBehaviour
                         Debug.Log(swipeDirection);
 
                         btnManager.SwipeAugmentation(swipeDirection);
+                    }
+                    else if (singleTouchPossible)
+                    {
+                        Debug.Log("TOUCH for PORTAL");
+                        portalManager.SpawnPortal();
                     }
                     break;
 

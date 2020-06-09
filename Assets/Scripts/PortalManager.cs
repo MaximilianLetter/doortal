@@ -10,6 +10,7 @@ public class PortalManager : MonoBehaviour
 {
     [Header("Spawn properties")]
     public GameObject objectToSpawn;
+    public GameObject doorMarker;
 
     public float spawnTime;
     public float replacementDistance;
@@ -96,6 +97,81 @@ public class PortalManager : MonoBehaviour
     /// <returns>No return value.</returns>
     public void SpawnObject(Vector3 position, Quaternion rotation, float width, float height)
     {
+        // Create an anchor that can be tracked from now on
+        ARAnchor newAnchor = anchorManager.AddAnchor(new Pose(position, rotation));
+        if (activeAnchor != null)
+        {
+            anchorManager.RemoveAnchor(activeAnchor);
+        }
+        activeAnchor = newAnchor;
+
+        if (activePortal == null)
+        {
+            GameObject obj = Instantiate(objectToSpawn);
+            obj.transform.parent = activeAnchor.transform;
+            obj.transform.localPosition = Vector3.zero;
+            obj.transform.rotation = rotation;
+
+            activePortal = obj;
+
+            // Set the augmentationCenter active and place behind the door
+            if (!inside)
+            {
+                Vector3 offset = rotation * new Vector3(0, 0, 1);
+                augmentationCenter.transform.position = position + offset;
+                augmentationCenter.transform.rotation = rotation;
+            }
+            else
+            {
+                // Make sure the door is always facing into the augmented world
+                obj.transform.Rotate(Vector3.up, 180.0f);
+            }
+
+            if (!created)
+            {
+                augmentationManager.Active = true;
+                created = true;
+            }
+
+            // Only scale up the portal window, so child objects are not stretched
+            GameObject portalWindow = activePortal.transform.Find("PortalWindow").gameObject;
+            Vector3 scale = new Vector3(width, height, 1);
+
+            StartCoroutine(ScaleOverTime(portalWindow, spawnTime, scale));
+        }
+        else
+        {
+            float distance = Vector3.Distance(activePortal.transform.position, position);
+            if (distance <= replacementDistance)
+            {
+                ReplacePortal(position, rotation, width, height);
+            }
+            else
+            {
+                Destroy(activePortal);
+                activePortal = null; // Immidiate reset for recursive function call
+                // Rerun the function to create a new portal
+                SpawnObject(position, rotation, width, height);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Spawn a portal at the given position. If a portal already exists, destroy the old one and create a new one.
+    /// If the new portal is close to the existing portal, set new values for the existing portal.
+    /// </summary>
+    /// <param name="position">Position of a new AR Anchor that holds the position of the portal.</param>
+    /// <param name="rotation">Rotation of the portal.</param>
+    /// <param name="width">Width of the portal window.</param>
+    /// <param name="height">Height of the portal window.</param>
+    /// <returns>No return value.</returns>
+    public void SpawnPortal()
+    {
+        Vector3 position = doorMarker.transform.position;
+        Quaternion rotation = doorMarker.transform.rotation;
+        float width = doorMarker.transform.localScale.x;
+        float height = doorMarker.transform.localScale.y;
+
         // Create an anchor that can be tracked from now on
         ARAnchor newAnchor = anchorManager.AddAnchor(new Pose(position, rotation));
         if (activeAnchor != null)
