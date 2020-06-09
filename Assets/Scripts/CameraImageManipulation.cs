@@ -133,11 +133,13 @@ public class CameraImageManipulation : MonoBehaviour
 
         if (success)
         {
-            imageToWorld.ShowIndicator(true, resultArray);
+            //imageToWorld.ShowIndicator(true, resultArray);
+            imageToWorld.ShowWorldIndicator(true, resultArray);
         }
         else
         {
-            imageToWorld.ShowIndicator(false, null);
+            //imageToWorld.ShowIndicator(false, null);
+            imageToWorld.ShowWorldIndicator(false, resultArray);
         }
 
         // Done with our temporary data

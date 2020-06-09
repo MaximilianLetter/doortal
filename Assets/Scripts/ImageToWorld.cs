@@ -18,13 +18,14 @@ public class ImageToWorld : MonoBehaviour
     private GameObject placementPlane;
     private GameObject placementCollider;
 
-
+    public GameObject doorMarker;
 
     public GameObject doorIndicator;
     private UILineRenderer uiLineRenderer;
     private RectTransform doorButton;
     private ARRaycastManager rayManager;
     private Camera cam;
+    private ARPointCloud cloud;
 
     // Amount of time a marker is hold before the marker disappears
     public float holdTime;
@@ -50,12 +51,14 @@ public class ImageToWorld : MonoBehaviour
         uiLineRenderer = doorIndicator.transform.Find("UI LineRenderer").GetComponent<UILineRenderer>();
         doorButton = doorIndicator.transform.Find("DoorButton").GetComponent<RectTransform>();
         rayManager = FindObjectOfType<ARRaycastManager>();
-        cam = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
+        cam = Camera.main;
 
         // Extract the two placement helper objects from parent
         placementPlane = placementHelpers.transform.GetChild(0).gameObject;
         placementCollider = placementHelpers.transform.GetChild(1).gameObject;
-        placementHelpers.SetActive(false);
+        //placementHelpers.SetActive(false);
+
+        cloud = FindObjectOfType<ARPointCloud>();
 
         CalcScaling();
     }
@@ -144,6 +147,192 @@ public class ImageToWorld : MonoBehaviour
                 }
             }
         }
+    }
+
+    // Directly convert the found points into a preview object in 3d world space
+    public void ShowWorldIndicator(bool foundNew, Vector2[] arr)
+    {
+        if (foundNew)
+        {
+            // Check if last frame something was found to avoid 1 frame flickerings
+            if (!foundStatus)
+            {
+                foundStatus = true;
+                foundTime = 0.0f;
+                return;
+            }
+
+            foundTime = 0.0f;
+
+            // Scale and offset the result array
+            List<Vector2> door = new List<Vector2>();
+            for (int i = 0; i < 4; i++)
+            {
+                door.Add((arr[i] * scaleUp) + offset);
+            }
+
+            Debug.Log("came here");
+            readyToPlace = true;
+            PlaceMarker(door);
+            Debug.Log("came here after placing");
+        }
+        else
+        {
+            foundTime += Time.deltaTime;
+
+            if (foundTime > holdTime)
+            {
+                // If no new positive input appears, reset everything
+                foundStatus = false;
+
+                if (doorMarker.activeSelf) doorMarker.SetActive(false);
+                readyToPlace = false;
+            }
+        }
+    }
+
+    private void PlaceMarker(List<Vector2> points)
+    {
+        if (!readyToPlace) return;
+
+        Debug.Log("came to PlaceMarker() function start");
+
+        // Order by y so top points and bottom points can be seperated
+        // pointList.Sort((a, b) => a.y.CompareTo(b.y));
+        points = points.OrderBy(point => point.y).ToList();
+
+        // Top points
+        var tp1 = points[2];
+        var tp2 = points[3];
+
+        // Bottom points
+        var bp1 = points[0];
+        var bp2 = points[1];
+
+        // Build Vector3 Points of bottom points via raycast
+        List<ARRaycastHit> hits = new List<ARRaycastHit>();
+
+        rayManager.Raycast(bp1, hits, TrackableType.Planes);
+        if (hits.Count == 0)
+        {
+            return;
+        }
+        var bp1_v3 = hits[0].pose.position;
+
+        rayManager.Raycast(bp2, hits, TrackableType.Planes);
+        if (hits.Count == 0)
+        {
+            return;
+        }
+        var bp2_v3 = hits[0].pose.position;
+
+        // Unify the height of both points
+        float unifyY = (bp1_v3.y + bp2_v3.y) / 2;
+        bp1_v3.y = unifyY;
+        bp2_v3.y = unifyY;
+
+        // Get the center between the bottom points
+        Vector3 bottomCenter = Vector3.Lerp(bp1_v3, bp2_v3, 0.5f);
+        //Debug.Log("ImageToWorld, bottomCenter: " + bottomCenter);
+
+        // Calculate rotation
+        Vector3 direction = (bp1_v3 - bp2_v3).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(direction);
+        Quaternion rotation = lookRotation * Quaternion.Euler(0, 90.0f, 0);
+
+        Vector3 camDir = cam.transform.forward;
+        float dot = Vector3.Dot(camDir, rotation * Vector3.forward);
+        Debug.Log("DOT: " + dot);
+        if (dot < 0)
+        {
+            Debug.Log("FLIP BY DOT PRODUCT");
+            // If portal is facing away, flip it
+            rotation *= Quaternion.Euler(0, 180, 0);
+        }
+
+        // Get width for object
+        float width = Vector3.Distance(bp1_v3, bp2_v3);
+
+        placementHelpers.transform.SetPositionAndRotation(bottomCenter, rotation);
+
+        // Since the following raycasts are physics based, sync the placement helper transforms
+        //Physics.SyncTransforms();
+
+        // Calulate height with help of a vertical quad that can be raycasted against
+        RaycastHit hit;
+        Vector3 tp1_v3, tp2_v3;
+        Ray ray;
+
+        ray = cam.ScreenPointToRay(tp1);
+        Physics.Raycast(ray, out hit);
+        //Debug.Log("top raycast1: " + hit.point);
+        tp1_v3 = hit.point;
+
+        ray = cam.ScreenPointToRay(tp2);
+        Physics.Raycast(ray, out hit);
+        //Debug.Log("top raycast2: " + hit.point);
+        tp2_v3 = hit.point;
+
+        Vector3 topCenter = Vector3.zero;
+
+        // Raycast did not hit the correct plane and is therefor not usable
+        if (tp1_v3 == Vector3.zero || tp2_v3 == Vector3.zero)
+        {
+            Debug.Log("RAYCAST DID NOT HIT");
+        }
+        else
+        {
+            topCenter = Vector3.Lerp(tp1_v3, tp2_v3, 0.5f);
+        }
+        Debug.Log("ImageToWorld, topCenter: " + topCenter);
+
+        float height = Vector3.Distance(bottomCenter, topCenter);
+        Debug.Log("ImageToWorld, height: " + height);
+
+        // Check if there are really points behind the detected rectangle to verify it is a door
+        // NOTE: First crappy version
+
+        // Scale and position the collider box according to the measured height
+        //placementCollider.transform.localPosition = new Vector3(0, height / 2, 0);
+        //placementCollider.transform.localScale = new Vector3(width, height, 1);
+
+        // Sync the transform changes to be able to use the collider function
+        //Physics.SyncTransforms();
+
+
+        //Physics.SyncTransforms();
+
+        // Get the collider attached to the child object
+        //Collider collider = placementCollider.GetComponentInChildren<Collider>();
+
+        //int count = 0;
+        //bool spaceBehindDoor = false;
+        //foreach (Vector3 point in cloud.positions)
+        //{
+        //    count++;
+        //    if (collider.bounds.Contains(point))
+        //    {
+        //        Debug.Log("THERE IS A FURTHER POINT");
+        //        spaceBehindDoor = true;
+        //        break;
+        //    }
+        //}
+        ////Debug.Log("POINTS: " + count);
+        //if (!spaceBehindDoor)
+        //{
+        //    //Debug.Log("no fitting point found");
+        //    //textManager.ShowNotification(TextContent.noRealDoor);
+        //    return;
+        //}
+
+        Debug.Log("ready to set the world marker");
+        Debug.Log(doorMarker);
+
+        // Set object position, rotation and scale
+        doorMarker.transform.SetPositionAndRotation(bottomCenter, rotation);
+        doorMarker.transform.localScale = new Vector3(width, height, 1);
+
+        if (!doorMarker.activeSelf) doorMarker.SetActive(true);
     }
 
     // NOTE: this function is not used but can be for a better smoothing
@@ -281,7 +470,7 @@ public class ImageToWorld : MonoBehaviour
         // Activate placement helper objects
         // The helper quad is part of the placement helpers
         // NOTE cam to door is pointing towards bottom point -> sehr schräg nach unten -> müsste in die mitte zeigen oder y wert auslassen bzw. mit rotation.eulerAngles.y ersetzen!
-        placementHelpers.SetActive(true);
+        //placementHelpers.SetActive(true);
         placementHelpers.transform.SetPositionAndRotation(bottomCenter, rotation);
 
         // Since the following raycasts are physics based, sync the placement helper transforms
@@ -388,27 +577,6 @@ public class ImageToWorld : MonoBehaviour
 
         // The use of the placement helpers is done, deactivate them
         //placementHelpers.SetActive(false);
-
-        //Vector3 camPos = Camera.main.transform.position;
-        //float distToDoor = Vector3.Distance(camPos, bottomCenter);
-        //float minOffset = 0.5f;
-        //bool spaceBehindDoor = false;
-        //int count = 0;
-        //foreach (Vector3 point in cloud.positions)
-        //{
-        //    count++;
-        //    if (Vector3.Distance(camPos, point) > distToDoor + minOffset)
-        //    {
-        //        Debug.Log("THERE IS A FURTHER POINT");
-        //        spaceBehindDoor = true;
-        //        break;
-        //    }
-        //}
-        //if (!spaceBehindDoor)
-        //{
-        //    textManager.ShowNotification(TextContent.noRealDoor);
-        //    return;
-        //}
 
 
         // Spawn object
