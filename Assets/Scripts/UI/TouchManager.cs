@@ -16,8 +16,25 @@ public class TouchManager : MonoBehaviour
     public PortalManager portalManager;
     //public ImageToWorld imgToWorld;
 
+    private bool ready = false;
+
+    IEnumerator Start()
+    {
+        OnboardingManager mng = FindObjectOfType<OnboardingManager>();
+
+        while (!mng.GetComplete())
+        {
+            yield return null;
+        }
+
+        Debug.Log("TouchManager -> Ready");
+        ready = true;
+    }
+
     private void Update()
     {
+        if (!ready) return;
+
         if (Input.touchCount > 0)
         {
             Touch touch = Input.touches[0];
