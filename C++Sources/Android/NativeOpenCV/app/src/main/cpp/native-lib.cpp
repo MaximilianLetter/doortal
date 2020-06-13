@@ -17,9 +17,32 @@ Java_com_example_nativeopencv_MainActivity_stringFromJNI(
 using namespace cv;
 using namespace std;
 
-// Declare all used constants
-const int RES = 180;
+// Resembles the Color32 format type of Unity
+struct Color32
+{
+    uchar red;
+    uchar green;
+    uchar blue;
+    uchar alpha;
+};
 
+// Resembles the Vector2 data type of Unity
+struct Vector2
+{
+    float x;
+    float y;
+};
+
+// Declare all used constants
+
+// Resolution constant
+const int RES = 480;
+
+// ROI constants
+const float ROI_WIDTH = 0.8;
+const float ROI_HEIGHT = 0.125;
+
+// Contrast constant
 const float CONTRAST = 1.2;
 
 // Blur constants
@@ -33,9 +56,9 @@ const int CANNY_UPPER = 200;
 // NOTE: these values need to be improved to ensure to always find the corners of a door
 // Corner detection constants
 const int CORNERS_MAX = 50;
-const float CORNERS_QUALITY = 0.05;
+const float CORNERS_BOT_QUALITY = 0.05;
+const float CORNERS_TOP_QUALITY = 0.01;
 const float CORNERS_MIN_DIST = 15.0;
-const int CORNERS_MASK_OFFSET = 10;
 const bool CORNERS_HARRIS = false;
 
 // Vertical lines constants
@@ -64,19 +87,20 @@ const float UPVOTE_FACTOR = 1.2;
 const float DOOR_IN_DOOR_DIFF_THRESH = 18.0; // Divider of image height
 const float COLOR_DIFF_THRESH = 50.0;
 const float ANGLE_DEVIATION_THRESH = 10.0;
+const float CLOSE_TO_INPUT_THRESH = 22.0;
 
 // Declare all used functions
-bool detect(Mat& image, vector<Point2f>& result);
-vector<vector<Point2f>> cornersToVertLines(vector<Point2f> corners, int height);
+bool detect(Mat& image, Vector2 inputPoint, vector<Point2f>& result);
+vector<vector<Point2f>> cornersToVertLines(vector<Point2f> cornersBot, vector<Point2f> cornersTop, int height);
 vector<vector<Point2f>> vertLinesToRectangles(vector<vector<Point2f>> lines);
 float compareRectangleToEdges(vector<Point2f> rect, Mat edges);
-vector<Point2f> selectBestCandidate(vector<vector<Point2f>> candidates, vector<float> scores, Mat gray);
+vector<Point2f> selectBestCandidate(vector<vector<Point2f>> candidates, vector<float> scores, Point inputPoint, Mat gray);
 
 float getDistance(Point2f p1, Point2f p2);
 float getOrientation(Point2f p1, Point2f p2);
 float getCornerAngle(Point2f p1, Point2f p2, Point2f p3);
 
-bool detect(Mat& image, vector<Point2f>& result)
+bool detect(Mat& image, Point inputPoint, vector<Point2f>& result)
 {
     // Scale image down
     // NOTE: the image comes in downscaled
@@ -101,18 +125,43 @@ bool detect(Mat& image, vector<Point2f>& result)
     Mat edges;
     Canny(blurred, edges, CANNY_LOWER, CANNY_UPPER);
 
-    // Generate mask and find corners
-    vector<Point2f> corners;
-    Mat mask;
+    // Find ROI's based on user input
+    Mat maskBot, maskTop;
 
-    mask = Mat::zeros(image.size(), CV_8U);
-    Rect rect = Rect(CORNERS_MASK_OFFSET, CORNERS_MASK_OFFSET, image.size().width - CORNERS_MASK_OFFSET, image.size().height - CORNERS_MASK_OFFSET);
-    mask(rect) = 1;
+    // Bottom ROI
+    int roiBotWidth = width * ROI_WIDTH;
+    int roiBotHeight = height * ROI_HEIGHT;
+    Point2f roiPoint = Point2f(inputPoint.x - roiBotWidth / 2, inputPoint.y - roiBotHeight / 2);
+    Rect roiBot = Rect(roiPoint.x, roiPoint.y, roiBotWidth, roiBotHeight);
 
-    goodFeaturesToTrack(blurred, corners, CORNERS_MAX, CORNERS_QUALITY, CORNERS_MIN_DIST, mask, 3, CORNERS_HARRIS);
+    // Cut overlapping parts off
+    roiBot = roiBot & Rect(0, 0, width, height);
+
+    maskBot = Mat::zeros(image.size(), CV_8U);
+    maskBot(roiBot) = 1;
+
+    // Top ROI
+    int lowLineBot = roiBot.y + (roiBot.height / 2);
+    int roiTopHeight = lowLineBot - (LINE_MIN * height);
+
+    Point polygonPoints[4] = {
+            Point(0, 0),
+            Point(width, 0),
+            Point(roiBot.x + roiBot.width, roiTopHeight),
+            Point(roiBot.x, roiTopHeight)
+    }; // NOTE: order matters
+
+    maskTop = Mat::zeros(image.size(), CV_8U);
+    fillConvexPoly(maskTop, polygonPoints, 4, cv::Scalar(255));
+
+    // Find corners using the given masks
+    vector<Point2f> cornersBot, cornersTop;
+
+    goodFeaturesToTrack(blurred, cornersBot, CORNERS_MAX, CORNERS_BOT_QUALITY, CORNERS_MIN_DIST, maskBot, 3, CORNERS_HARRIS);
+    goodFeaturesToTrack(blurred, cornersTop, CORNERS_MAX, CORNERS_TOP_QUALITY, CORNERS_MIN_DIST, maskTop, 3, CORNERS_HARRIS);
 
     // Connect corners to vertical lines
-    vector<vector<Point2f>> lines = cornersToVertLines(corners, int(RES * ratio));
+    vector<vector<Point2f>> lines = cornersToVertLines(cornersBot, cornersTop, int(RES * ratio));
 
     // Group corners based on found lines to rectangles
     vector<vector<Point2f>> rectangles = vertLinesToRectangles(lines);
@@ -135,7 +184,7 @@ bool detect(Mat& image, vector<Point2f>& result)
     // Select the best candidate out of the given rectangles
     if (candidates.size())
     {
-        vector<Point2f> door = selectBestCandidate(candidates, scores, gray);
+        vector<Point2f> door = selectBestCandidate(candidates, scores, inputPoint, gray);
 
         result = door;
 
@@ -146,41 +195,22 @@ bool detect(Mat& image, vector<Point2f>& result)
 }
 
 // Group corners to vertical lines that represent the door posts
-vector<vector<Point2f>> cornersToVertLines(vector<Point2f> corners, int height)
+vector<vector<Point2f>> cornersToVertLines(vector<Point2f> cornersBot, vector<Point2f> cornersTop, int height)
 {
-    float lengthMax = LINE_MAX * height;
-    float lengthMin = LINE_MIN * height;
-
     vector<vector<Point2f>> lines;
     vector<bool> done;
 
-    for (int i = 0; i < corners.size(); i++)
+    for (int i = 0; i < cornersBot.size(); i++)
     {
-        for (int j = 0; j < corners.size(); j++)
+        for (int j = 0; j < cornersTop.size(); j++)
         {
-            if (j <= i) continue;
-
-            float distance = getDistance(corners[i], corners[j]);
-            if (distance < lengthMin || distance > lengthMax)
-            {
-                continue;
-            }
-
-            float orientation = getOrientation(corners[i], corners[j]);
+            float orientation = getOrientation(cornersBot[i], cornersTop[j]);
             if (orientation < LINE_ANGLE_MIN)
             {
                 continue;
             }
 
-            // Sort by y-value, so that the high points are first
-            vector<Point2f> line;
-            if (corners[i].y < corners[j].y)
-            {
-                line = { corners[i], corners[j] };
-            }
-            else {
-                line = { corners[j], corners[i] };
-            }
+            vector<Point2f> line = { cornersTop[j], cornersBot[i] };
             lines.push_back(line);
         }
     }
@@ -328,7 +358,7 @@ float compareRectangleToEdges(vector<Point2f> rect, Mat edges)
 }
 
 // Select the candidate by comparing their scores, score boni if special requirements are met
-vector<Point2f> selectBestCandidate(vector<vector<Point2f>> candidates, vector<float> scores, Mat gray)
+vector<Point2f> selectBestCandidate(vector<vector<Point2f>> candidates, vector<float> scores, Point inputPoint, Mat gray)
 {
     for (int i = 0; i < candidates.size(); i++)
     {
@@ -362,6 +392,14 @@ vector<Point2f> selectBestCandidate(vector<vector<Point2f>> candidates, vector<f
                 scores[i] = scores[i] * UPVOTE_FACTOR;
             }
         }
+
+        // Check how close the bottom line center is to the input point
+		Point2f bottomCenterPoint = (candidates[i][3] + candidates[i][0]) / 2;
+
+		if (getDistance(bottomCenterPoint, inputPoint) < CLOSE_TO_INPUT_THRESH)
+		{
+			scores[i] *= UPVOTE_FACTOR;
+		}
     }
 
     int index = max_element(scores.begin(), scores.end()) - scores.begin();
@@ -401,28 +439,16 @@ float getCornerAngle(Point2f p1, Point2f p2, Point2f p3)
     return angle;
 }
 
-// Resembles the Color32 format type of Unity
-struct Color32
-{
-    uchar red;
-    uchar green;
-    uchar blue;
-    uchar alpha;
-};
 
-// Resembles the Vector2 data type of Unity
-struct Vector2
-{
-    float x;
-    float y;
-};
 
 // Below code is callable from Unity
 extern "C" {
-    bool ProcessImage(Vector2* result, Color32* rawImage, int width, int height, bool rotation)
+    bool ProcessImage(Vector2* result, Color32* rawImage, Vector2 userInput, int width, int height, bool rotation)
     {
+        // Form input values to OpenCV types
         Mat image(height, width, CV_8UC4, rawImage);
         vector<Point2f> door;
+        Point inputPoint = Point(userInput.x, userInput.y);
 
         if (rotation) {
             // NOTE: the image is already flipped in C#
@@ -431,7 +457,7 @@ extern "C" {
             resize(image, image, Size(image.cols, image.rows), 0, 0, INTER_LINEAR);
         }
 
-        bool success = detect(image, door);
+        bool success = detect(image, inputPoint, door);
 
         if (success)
         {
