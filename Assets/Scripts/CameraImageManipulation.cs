@@ -87,6 +87,7 @@ public class CameraImageManipulation : MonoBehaviour
             // Downsample the image
             // 120p -> 0.25
             // 180p -> 0.375
+            // 480p -> -
             outputDimensions = new Vector2Int(Convert.ToInt32(image.width * 0.375), Convert.ToInt32(image.height * 0.375)),
 
             // NOTE: directly converting into single channel could be an option,

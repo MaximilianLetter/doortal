@@ -79,7 +79,7 @@ const float RECTANGLE_OPPOSITE_THRESH = 10.0;
 // Comparison of rectangles to edges constants
 const float RECT_THRESH = 0.85;
 const float LINE_THRESH = 0.5;
-const int LINE_WIDTH = 2;
+const int LINE_WIDTH = 5;
 const float BOT_LINE_BONUS = 0.25;
 
 // Selection of best candidate constants
@@ -91,7 +91,7 @@ const float CLOSE_TO_INPUT_THRESH = 22.0;
 
 // Declare all used functions
 bool detect(Mat& image, Vector2 inputPoint, vector<Point2f>& result);
-vector<vector<Point2f>> cornersToVertLines(vector<Point2f> cornersBot, vector<Point2f> cornersTop, int height);
+vector<vector<Point2f>> cornersToVertLines(vector<Point2f> cornersBot, vector<Point2f> cornersTop);
 vector<vector<Point2f>> vertLinesToRectangles(vector<vector<Point2f>> lines);
 float compareRectangleToEdges(vector<Point2f> rect, Mat edges);
 vector<Point2f> selectBestCandidate(vector<vector<Point2f>> candidates, vector<float> scores, Point inputPoint, Mat gray);
@@ -161,7 +161,7 @@ bool detect(Mat& image, Point inputPoint, vector<Point2f>& result)
     goodFeaturesToTrack(blurred, cornersTop, CORNERS_MAX, CORNERS_TOP_QUALITY, CORNERS_MIN_DIST, maskTop, 3, CORNERS_HARRIS);
 
     // Connect corners to vertical lines
-    vector<vector<Point2f>> lines = cornersToVertLines(cornersBot, cornersTop, int(RES * ratio));
+    vector<vector<Point2f>> lines = cornersToVertLines(cornersBot, cornersTop);
 
     // Group corners based on found lines to rectangles
     vector<vector<Point2f>> rectangles = vertLinesToRectangles(lines);
@@ -195,7 +195,7 @@ bool detect(Mat& image, Point inputPoint, vector<Point2f>& result)
 }
 
 // Group corners to vertical lines that represent the door posts
-vector<vector<Point2f>> cornersToVertLines(vector<Point2f> cornersBot, vector<Point2f> cornersTop, int height)
+vector<vector<Point2f>> cornersToVertLines(vector<Point2f> cornersBot, vector<Point2f> cornersTop)
 {
     vector<vector<Point2f>> lines;
     vector<bool> done;
@@ -294,7 +294,7 @@ vector<vector<Point2f>> vertLinesToRectangles(vector<vector<Point2f>> lines)
                 {
                     int kOpp = (k + 2) % 4;
 
-                    if (abs(180.0 - (angles[k] + angles[kOpp]) > RECTANGLE_OPPOSITE_THRESH))
+                    if (abs(180.0 - (angles[k] + angles[kOpp])) > RECTANGLE_OPPOSITE_THRESH)
                     {
                         rectangular = false;
                         break;
