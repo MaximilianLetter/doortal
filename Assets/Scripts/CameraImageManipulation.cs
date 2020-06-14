@@ -29,6 +29,7 @@ public class CameraImageManipulation : MonoBehaviour
     private unsafe static extern bool ProcessImage(
         Vector2* resultArray,
         Color32[] rawImage,
+        Vector2 userInput,
         int width,
         int height,
         bool rotated
@@ -36,14 +37,14 @@ public class CameraImageManipulation : MonoBehaviour
 
     // NOTE: capsulating the extern function for manipulating the result array
     // https://stackoverflow.com/questions/53174216/update-vector3-array-from-c-native-plugin
-    bool ProcessImage(Vector2[] vecArray, Color32[] rawImage, int width, int height, bool rotated)
+    bool ProcessImage(Vector2[] vecArray, Color32[] rawImage, Vector2 userInput, int width, int height, bool rotated)
     {
         unsafe
         {
             // Pin array then send to C++
             fixed (Vector2* vecPtr = vecArray)
             {
-                return ProcessImage(vecPtr, rawImage, width, height, rotated);
+                return ProcessImage(vecPtr, rawImage, userInput, width, height, rotated);
             }
         }
     }
@@ -60,12 +61,6 @@ public class CameraImageManipulation : MonoBehaviour
 
         Debug.Log("CameraImageManipulation -> Ready");
         cameraManager = Camera.main.GetComponent<ARCameraManager>();
-        cameraManager.frameReceived += OnCameraFrameReceived;
-    }
-
-    void OnDisable()
-    {
-        if (cameraManager) cameraManager.frameReceived -= OnCameraFrameReceived;
     }
 
     // NOTE: part of the following steps to setup image access on CPU come from
@@ -73,7 +68,7 @@ public class CameraImageManipulation : MonoBehaviour
     // other names than described in the documentation.
     // e.g. cameraManager.frameReceived instead of cameraManager.cameraFrameReceived
     // https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@3.1/manual/cpu-camera-image.html
-    unsafe void OnCameraFrameReceived(ARCameraFrameEventArgs eventArgs)
+    public unsafe void DetectOnImage(Vector2 userInput)
     {
         XRCameraImage image;
         if (!cameraManager.TryGetLatestImage(out image))
@@ -88,7 +83,7 @@ public class CameraImageManipulation : MonoBehaviour
             // 120p -> 0.25
             // 180p -> 0.375
             // 480p -> -
-            outputDimensions = new Vector2Int(Convert.ToInt32(image.width * 0.375), Convert.ToInt32(image.height * 0.375)),
+            outputDimensions = new Vector2Int(image.width, image.height),
 
             // NOTE: directly converting into single channel could be an option,
             // but it is not sure that R8 represents grayscale in one channel
@@ -130,18 +125,9 @@ public class CameraImageManipulation : MonoBehaviour
         Vector2[] resultArray = new Vector2[CORNERS];
 
         // Call to C++ Code
-        bool success = ProcessImage(resultArray, rawPixels, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y, true);
+        bool success = ProcessImage(resultArray, rawPixels, userInput, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y, true);
 
-        if (success)
-        {
-            //imageToWorld.ShowIndicator(true, resultArray);
-            imageToWorld.ShowWorldIndicator(true, resultArray);
-        }
-        else
-        {
-            //imageToWorld.ShowIndicator(false, null);
-            imageToWorld.ShowWorldIndicator(false, resultArray);
-        }
+        imageToWorld.TransferIntoWorld(success, resultArray);
 
         // Done with our temporary data
         buffer.Dispose();

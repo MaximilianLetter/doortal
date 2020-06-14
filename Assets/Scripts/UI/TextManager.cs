@@ -9,6 +9,7 @@ public enum TextContent {
     scanGround,
     onboardingComplete,
     noGround,
+    noDoorFound,
     noRealDoor,
     doorCleared,
     everythingCleared
@@ -52,6 +53,10 @@ public class TextManager : MonoBehaviour
                 break;
             case TextContent.noGround:
                 content.text = "No ground was found.\nMake sure the ground near the door is detected.";
+                Invoke("HideNotification", displayTime);
+                break;
+            case TextContent.noDoorFound:
+                content.text = "No door was found.\nMake sure to tap on the doorstep.";
                 Invoke("HideNotification", displayTime);
                 break;
             case TextContent.noRealDoor:

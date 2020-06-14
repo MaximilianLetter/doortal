@@ -16,13 +16,20 @@ public class TouchManager : MonoBehaviour
 
     public ButtonManager btnManager;
     public PortalManager portalManager;
+    public CameraImageManipulation cameraImageManager;
     //public ImageToWorld imgToWorld;
 
     private bool ready = false;
 
+    private Vector2 camImageSize = new Vector2(640, 480);
+    private float scaleDown;
+    private Vector2 offset;
+
     IEnumerator Start()
     {
         OnboardingManager mng = FindObjectOfType<OnboardingManager>();
+
+        CalcScaling();
 
         while (!mng.GetComplete())
         {
@@ -31,6 +38,17 @@ public class TouchManager : MonoBehaviour
 
         Debug.Log("TouchManager -> Ready");
         ready = true;
+    }
+
+    private void CalcScaling()
+    {
+        Vector2 screen = new Vector2(Screen.height, Screen.width);
+        Vector2 goal = camImageSize;
+
+        // NOTE: Aspect ratios are different, therefor an offset needs to be calculated
+        scaleDown = goal.x / screen.x;
+
+        offset = new Vector2(-((screen.y * scaleDown) - goal.y) / 2, 0);
     }
 
     private void Update()
@@ -54,7 +72,6 @@ public class TouchManager : MonoBehaviour
                     }
 
                     swipePossible = true;
-                    singleTouchPossible = true;
 
                     startPos = touch.position;
                     startTime = Time.time;
@@ -62,6 +79,7 @@ public class TouchManager : MonoBehaviour
 
                 case TouchPhase.Stationary:
                     swipePossible = false;
+                    singleTouchPossible = true;
                     break;
 
                 case TouchPhase.Ended:
@@ -85,32 +103,20 @@ public class TouchManager : MonoBehaviour
                     }
                     else if (singleTouchPossible)
                     {
-                        Debug.Log("TOUCH for PORTAL");
+                        Debug.Log("TOUCH for DETECTION");
 
-                        // Version2
+                        Vector2 imgPoint = (touch.position * scaleDown) + offset;
+
+                        // In OpenCV, y 0 starts top, Unity starts bottom
+                        imgPoint = new Vector2(imgPoint.x, camImageSize.x - imgPoint.y);
+                        Debug.Log(touch.position);
+                        Debug.Log(imgPoint);
+                        cameraImageManager.DetectOnImage(imgPoint);
                         
-                        portalManager.SpawnPortal();
-
-                        // Version1
-                        //if (!IsOnUI())
-                        //{
-                        //    portalManager.SpawnPortal();
-                        //}
                     }
                     break;
 
             }
         }
     }
-
-    private bool IsOnUI()
-    {
-        PointerEventData eventDataPos = new PointerEventData(EventSystem.current);
-        eventDataPos.position = Input.mousePosition;
-        List<RaycastResult> results = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(eventDataPos, results);
-
-        return results.Count > 0;
-    }
-
 }

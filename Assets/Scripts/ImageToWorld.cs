@@ -66,13 +66,13 @@ public class ImageToWorld : MonoBehaviour
     // Calculate the scaling and offset that has to be put on the points
     void CalcScaling()
     {
-        // NOTE: Input should be set dynamically by device
         Vector2 goal = new Vector2(Screen.height, Screen.width);
 
         // NOTE: The cam image was downsampled for processing
         // 120p -> 0.25f
         // 180p -> 0.375f
-        Vector2 inputDownscaled = imgInputSize * 0.375f;
+        // 480p -> -
+        Vector2 inputDownscaled = imgInputSize;
 
         // NOTE: Aspect ratios are different, there for an offset needs to be calculated
         scaleUp = goal.x / inputDownscaled.x;
@@ -186,6 +186,25 @@ public class ImageToWorld : MonoBehaviour
                 if (doorMarker.activeSelf) doorMarker.SetActive(false);
                 readyToPlace = false;
             }
+        }
+    }
+
+    public void TransferIntoWorld(bool success, Vector2[] arr)
+    {
+        if (success)
+        {
+            List<Vector2> door = new List<Vector2>();
+            for (int i = 0; i < 4; i++)
+            {
+                door.Add((arr[i] * scaleUp) + offset);
+            }
+
+            readyToPlace = true;
+            PlaceObject(door);
+        }
+        else
+        {
+            textManager.ShowNotification(TextContent.noDoorFound);
         }
     }
 
@@ -373,18 +392,11 @@ public class ImageToWorld : MonoBehaviour
     //}
 
     // Place the object based on the current proposed door
-    public void PlaceObject()
+    public void PlaceObject(List<Vector2> pointList)
     {
         if (!readyToPlace) return;
 
         Debug.Log("----------------------------------------------------------");
-
-        var points = uiLineRenderer.Points;
-
-        List<Vector2> pointList = new List<Vector2>(points);
-
-        // The last point is equal to the first point and must be removed
-        pointList.RemoveAt(pointList.Count - 1);
 
         // Order by y so top points and bottom points can be seperated
         // pointList.Sort((a, b) => a.y.CompareTo(b.y));
@@ -433,31 +445,15 @@ public class ImageToWorld : MonoBehaviour
         Quaternion lookRotation = Quaternion.LookRotation(direction);
         Quaternion rotation = lookRotation * Quaternion.Euler(0, 90.0f, 0);
 
-        // NOTE TO TEST
-        //Quaternion camToDoorRotation = Quaternion.LookRotation((bottomCenter - Camera.main.transform.position).normalized);
-
-        // doesnt help since its always close to 1, but why 
         Vector3 camDir = Camera.main.transform.forward;
-        //float dot = Vector3.Dot(camDir, (bottomCenter - Camera.main.transform.position).normalized);
         float dot = Vector3.Dot(camDir, rotation * Vector3.forward);
         Debug.Log("DOT: " + dot);
         if (dot < 0)
         {
-            Debug.Log("FLIP BY DOT PRODUCT");
             // If portal is facing away, flip it
             rotation *= Quaternion.Euler(0, 180, 0);
         }
         Debug.Log(rotation.eulerAngles);
-
-        //Vector3 camToPoint = Quaternion.LookRotation((bottomCenter - Camera.main.transform.position).normalized).eulerAngles;
-        //Debug.Log("ROTATION CAMERA TO POINT");
-        //Debug.Log(camToPoint);
-        //if (camToPoint.y > 180 && rotation.y > 180)
-        //{
-        //    Debug.Log("Rotation flip");
-        //    Vector3 rotEuler = rotation.eulerAngles;
-        //    rotation = Quaternion.Euler(rotEuler.x, rotEuler.y - 180, rotEuler.z);
-        //}
 
         // Get width for object
         float width = Vector3.Distance(bp1_v3, bp2_v3);
@@ -527,48 +523,37 @@ public class ImageToWorld : MonoBehaviour
 
         // Check if there are really points behind the detected rectangle to verify it is a door
         // NOTE: First crappy version
-        ARPointCloud cloud = FindObjectOfType<ARPointCloud>();
+        //ARPointCloud cloud = FindObjectOfType<ARPointCloud>();
 
-        // Scale and position the collider box according to the measured height
-        placementCollider.transform.localPosition = new Vector3(0, height / 2, 0);
-        placementCollider.transform.localScale = new Vector3(width, height, 1);
+        //// Scale and position the collider box according to the measured height
+        //placementCollider.transform.localPosition = new Vector3(0, height / 2, 0);
+        //placementCollider.transform.localScale = new Vector3(width, height, 1);
 
-        // Sync the transform changes to be able to use the collider function
-        Physics.SyncTransforms();
-
-        //GameObject colliderObj = Instantiate(spawnBoxCollider, boxPosition, rotation);
-        //var colliderObj = spawnBoxCollider;
-        //colliderObj.transform.SetPositionAndRotation(boxPosition, rotation);
-        //colliderObj.transform.localScale = new Vector3(width, height, 1);
-        
-        // TEST
-        // doesnt seem to work
-        // NOTE: sometimes the box is in the wrong direction!
-
+        //// Sync the transform changes to be able to use the collider function
         //Physics.SyncTransforms();
 
-        // Get the collider attached to the child object
-        Collider collider = placementCollider.GetComponentInChildren<Collider>();
+        //// Get the collider attached to the child object
+        //Collider collider = placementCollider.GetComponentInChildren<Collider>();
         
-        int count = 0;
-        bool spaceBehindDoor = false;
-        foreach (Vector3 point in cloud.positions)
-        {
-            count++;
-            if (collider.bounds.Contains(point))
-            {
-                Debug.Log("THERE IS A FURTHER POINT");
-                spaceBehindDoor = true;
-                break;
-            }
-        }
-        Debug.Log("POINTS: " + count);
-        if (!spaceBehindDoor)
-        {
-            Debug.Log("no fitting point found");
-            textManager.ShowNotification(TextContent.noRealDoor);
-            return;
-        }
+        //int count = 0;
+        //bool spaceBehindDoor = false;
+        //foreach (Vector3 point in cloud.positions)
+        //{
+        //    count++;
+        //    if (collider.bounds.Contains(point))
+        //    {
+        //        Debug.Log("THERE IS A FURTHER POINT");
+        //        spaceBehindDoor = true;
+        //        break;
+        //    }
+        //}
+        //Debug.Log("POINTS: " + count);
+        //if (!spaceBehindDoor)
+        //{
+        //    Debug.Log("no fitting point found");
+        //    textManager.ShowNotification(TextContent.noRealDoor);
+        //    return;
+        //}
 
         // The use of the placement helpers is done, deactivate them
         //placementHelpers.SetActive(false);
