@@ -26,6 +26,7 @@ public class ImageToWorld : MonoBehaviour
     private ARRaycastManager rayManager;
     private Camera cam;
     private ARPointCloud cloud;
+    private ScalingManager scale;
 
     // Amount of time a marker is hold before the marker disappears
     public float holdTime;
@@ -42,10 +43,6 @@ public class ImageToWorld : MonoBehaviour
 
     private bool readyToPlace = false;
 
-    private Vector2 imgInputSize = new Vector2(640, 480);
-    private float scaleUp;
-    private Vector2 offset;
-
     void Start()
     {
         uiLineRenderer = doorIndicator.transform.Find("UI LineRenderer").GetComponent<UILineRenderer>();
@@ -60,25 +57,9 @@ public class ImageToWorld : MonoBehaviour
 
         cloud = FindObjectOfType<ARPointCloud>();
 
-        CalcScaling();
+        scale = FindObjectOfType<ScalingManager>();
     }
 
-    // Calculate the scaling and offset that has to be put on the points
-    void CalcScaling()
-    {
-        Vector2 goal = new Vector2(Screen.height, Screen.width);
-
-        // NOTE: The cam image was downsampled for processing
-        // 120p -> 0.25f
-        // 180p -> 0.375f
-        // 480p -> -
-        Vector2 inputDownscaled = imgInputSize;
-
-        // NOTE: Aspect ratios are different, there for an offset needs to be calculated
-        scaleUp = goal.x / inputDownscaled.x;
-
-        offset = new Vector2(-((inputDownscaled.y * scaleUp) - goal.y) / 2, 0);
-    }
 
     public void ShowIndicator(bool foundNew, Vector2[] arr)
     {
@@ -106,7 +87,7 @@ public class ImageToWorld : MonoBehaviour
             for (int i = 0; i < 4; i++)
             {
                 //Vector2 point = new Vector2((arr[i * 2] * scaleUp) + offset, arr[i * 2 + 1] * scaleUp);
-                Vector2 point = (arr[i] * scaleUp) + offset;
+                Vector2 point = scale.PointToScreen(arr[i]);
                 door.Add(point);
 
                 centroid += point;
@@ -116,7 +97,7 @@ public class ImageToWorld : MonoBehaviour
                 if (point.y < minY) minY = point.y;
             }
             centroid *= 0.25f;
-            door.Add((arr[0] * scaleUp) + offset);
+            door.Add(scale.PointToScreen(arr[0]));
 
             uiLineRenderer.Points = door.ToArray();
 
@@ -168,7 +149,7 @@ public class ImageToWorld : MonoBehaviour
             List<Vector2> door = new List<Vector2>();
             for (int i = 0; i < 4; i++)
             {
-                door.Add((arr[i] * scaleUp) + offset);
+                door.Add(scale.PointToScreen(arr[i]));
             }
 
             readyToPlace = true;
@@ -196,7 +177,7 @@ public class ImageToWorld : MonoBehaviour
             List<Vector2> door = new List<Vector2>();
             for (int i = 0; i < 4; i++)
             {
-                door.Add((arr[i] * scaleUp) + offset);
+                door.Add(scale.PointToScreen(arr[i]));
             }
 
             readyToPlace = true;
@@ -401,6 +382,11 @@ public class ImageToWorld : MonoBehaviour
         // Order by y so top points and bottom points can be seperated
         // pointList.Sort((a, b) => a.y.CompareTo(b.y));
         pointList = pointList.OrderBy(point => point.y).ToList();
+        Debug.Log("sorted points");
+        pointList.ForEach(p =>
+        {
+            Debug.Log(p);
+        });
 
         // Top points
         var tp1 = pointList[2];

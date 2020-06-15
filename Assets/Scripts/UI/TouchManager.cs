@@ -2,9 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class TouchManager : MonoBehaviour
 {
+    public GameObject touchIndicator;
+    private RectTransform touchIndicatorTransform;
+    private Image touchIndicatorImg;
+
     public float minSwipeDist = 25.0f;
     public float maxTime = 2.0f;
 
@@ -17,19 +22,19 @@ public class TouchManager : MonoBehaviour
     public ButtonManager btnManager;
     public PortalManager portalManager;
     public CameraImageManipulation cameraImageManager;
-    //public ImageToWorld imgToWorld;
+
+    private ScalingManager scale;
 
     private bool ready = false;
-
-    private Vector2 camImageSize = new Vector2(640, 480);
-    private float scaleDown;
-    private Vector2 offset;
 
     IEnumerator Start()
     {
         OnboardingManager mng = FindObjectOfType<OnboardingManager>();
+        scale = FindObjectOfType<ScalingManager>();
 
-        CalcScaling();
+        touchIndicatorTransform = touchIndicator.GetComponent<RectTransform>();
+        touchIndicatorImg = touchIndicator.GetComponent<Image>();
+        touchIndicator.SetActive(false);
 
         while (!mng.GetComplete())
         {
@@ -38,17 +43,6 @@ public class TouchManager : MonoBehaviour
 
         Debug.Log("TouchManager -> Ready");
         ready = true;
-    }
-
-    private void CalcScaling()
-    {
-        Vector2 screen = new Vector2(Screen.height, Screen.width);
-        Vector2 goal = camImageSize;
-
-        // NOTE: Aspect ratios are different, therefor an offset needs to be calculated
-        scaleDown = goal.x / screen.x;
-
-        offset = new Vector2(-((screen.y * scaleDown) - goal.y) / 2, 0);
     }
 
     private void Update()
@@ -105,18 +99,33 @@ public class TouchManager : MonoBehaviour
                     {
                         Debug.Log("TOUCH for DETECTION");
 
-                        Vector2 imgPoint = (touch.position * scaleDown) + offset;
+                        touchIndicator.SetActive(true);
+                        touchIndicatorTransform.position = touch.position;
 
-                        // In OpenCV, y 0 starts top, Unity starts bottom
-                        imgPoint = new Vector2(imgPoint.x, camImageSize.x - imgPoint.y);
-                        Debug.Log(touch.position);
-                        Debug.Log(imgPoint);
-                        cameraImageManager.DetectOnImage(imgPoint);
-                        
+                        StartCoroutine(FadeTouchOut(1.0f));
+
+
+                        Vector2 imgPoint = scale.PointToDetection(touch.position);
+                        cameraImageManager.DetectOnImage(imgPoint);                        
                     }
                     break;
 
             }
         }
+    }
+
+    IEnumerator FadeTouchOut(float time)
+    {
+        float currentTime = 0;
+        Color transparent = new Color(255.0f, 255.0f, 255.0f, 0.0f);
+
+        do
+        {
+            touchIndicatorImg.color = Color.Lerp(Color.white, transparent, currentTime / time);
+            currentTime += Time.deltaTime;
+            yield return null;
+        } while (currentTime <= time);
+
+        touchIndicator.SetActive(false);
     }
 }
