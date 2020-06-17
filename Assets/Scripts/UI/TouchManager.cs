@@ -10,8 +10,13 @@ public class TouchManager : MonoBehaviour
     private RectTransform touchIndicatorTransform;
     private Image touchIndicatorImg;
 
+    // Swipe properties
     public float minSwipeDist = 25.0f;
-    public float maxTime = 2.0f;
+    public float maxTime = 1.5f;
+
+    // Touch properties
+    public float maxTouchDist = 10.0f;
+    public float minTime = 0.1f;
 
     private float startTime;
     private Vector2 startPos;
@@ -57,8 +62,9 @@ public class TouchManager : MonoBehaviour
             {
                 case TouchPhase.Began:
 
-                    // Make sure that touch does not start on game object
-                    if (EventSystem.current.IsPointerOverGameObject(touch.fingerId))
+                    // Make sure that touch does not start on a selectable gameObject
+                    // That makes touch go through text but not buttons
+                    if (EventSystem.current.currentSelectedGameObject)
                     {
                         singleTouchPossible = false;
                         swipePossible = false;
@@ -86,6 +92,7 @@ public class TouchManager : MonoBehaviour
                     }
 
                     float swipeDist = Mathf.Abs(touch.position.x - startPos.x);
+                    float distance = Vector2.Distance(touch.position, startPos);
 
                     if (swipePossible && (swipeDist > minSwipeDist))
                     {
@@ -97,19 +104,30 @@ public class TouchManager : MonoBehaviour
                     }
                     else if (singleTouchPossible)
                     {
+                        if (touchTime < minTime)
+                        {
+                            Debug.Log("TOUCH too short");
+                            return;
+                        }
+
+                        if (distance > maxTouchDist)
+                        {
+                            Debug.Log("TOUCH moved too much");
+                            return;
+                        }
+
                         Debug.Log("TOUCH for DETECTION");
 
+                        // Display a touch point
                         touchIndicator.SetActive(true);
                         touchIndicatorTransform.position = touch.position;
-
                         StartCoroutine(FadeTouchOut(1.0f));
 
-
+                        // Detect on camera image
                         Vector2 imgPoint = scale.PointToDetection(touch.position);
                         cameraImageManager.DetectOnImage(imgPoint);                        
                     }
                     break;
-
             }
         }
     }
