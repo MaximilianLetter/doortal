@@ -7,6 +7,7 @@ using UnityEngine.XR.ARSubsystems;
 
 using System.Runtime.InteropServices;
 using System.Collections;
+using UnityEngine.UI;
 
 // NOTE: based on documentation: https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@2.1/manual/cpu-camera-image.html#synchronously-convert-to-grayscale-and-color
 // Some namings seem to be different in documentation and package
@@ -20,7 +21,8 @@ public class CameraImageManipulation : MonoBehaviour
     private const int CORNERS = 4;
 
     // Script that holds the next step in processing the image
-    public ImageToWorld imageToWorld;
+    private ScalingManager scale;
+    private ImageToWorld imageToWorld;
 
     // Import function from native C++ library
     private const string LIBRARY_NAME = "native-lib";
@@ -54,6 +56,9 @@ public class CameraImageManipulation : MonoBehaviour
     {
         OnboardingManager mng = FindObjectOfType<OnboardingManager>();
 
+        scale = FindObjectOfType<ScalingManager>();
+        imageToWorld = FindObjectOfType<ImageToWorld>();
+
         while (!mng.GetComplete())
         {
             yield return null;
@@ -79,11 +84,7 @@ public class CameraImageManipulation : MonoBehaviour
             // Get the entire image
             inputRect = new RectInt(0, 0, image.width, image.height),
 
-            // Downsample the image
-            // 120p -> 0.25
-            // 180p -> 0.375
-            // 480p -> -
-            outputDimensions = new Vector2Int(image.width, image.height),
+            outputDimensions = new Vector2Int(Convert.ToInt32(image.width * scale.detectionScaleFactor), Convert.ToInt32(image.height * scale.detectionScaleFactor)),
 
             // NOTE: directly converting into single channel could be an option,
             // but it is not sure that R8 represents grayscale in one channel
@@ -91,7 +92,7 @@ public class CameraImageManipulation : MonoBehaviour
             outputFormat = TextureFormat.RGBA32,
 
             // Flip across the vertical axis (mirror image)
-            transformation = CameraImageTransformation.MirrorY
+            transformation = CameraImageTransformation.None
         };
 
         // See how many bytes we need to store the final image.
@@ -128,6 +129,7 @@ public class CameraImageManipulation : MonoBehaviour
         bool success = ProcessImage(resultArray, rawPixels, userInput, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y, true);
 
         imageToWorld.TransferIntoWorld(success, resultArray);
+        //imageToWorld.ShowIndicator(success, resultArray);
 
         // Done with our temporary data
         buffer.Dispose();

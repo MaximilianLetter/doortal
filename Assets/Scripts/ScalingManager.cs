@@ -37,27 +37,22 @@ public class ScalingManager : MonoBehaviour
     {
         Vector2 newPoint;
 
-        Debug.Log("PointToSceen---");
-        Debug.Log("IN: " + point);
-        //newPoint = new Vector2(point.x, detectionImageSize.y - point.y);
-        //Debug.Log("IN INV: " + newPoint);
+        // Invert Y value
+        newPoint = new Vector2(point.x, detectionImageSize.y - point.y);
 
-        newPoint = (point * scaleUp) + offsetUp;
-        Debug.Log("OUT: " + newPoint);
+        newPoint = (newPoint * scaleUp) + offsetUp;
 
         return newPoint;
     }
 
     public Vector2 PointToDetection(Vector2 point)
     {
-        Debug.Log("PointToDetection---");
-        Debug.Log("IN: " + point);
-        Vector2 newPoint = (point * scaleDown) + offsetDown;
-        Debug.Log("OUT: " + newPoint);
+        Vector2 newPoint;
 
-        // Invert y value of point, OpenCV 0 is top, Unity 0 is bottom
-        newPoint = new Vector2(newPoint.x, detectionImageSize.y - newPoint.y);
-        Debug.Log("OUT INV: " + newPoint);
+        // Invert Y value
+        newPoint = new Vector2(point.x, screenSize.y - point.y);
+
+        newPoint = (newPoint * scaleDown) + offsetDown;
 
         return newPoint;
     }
