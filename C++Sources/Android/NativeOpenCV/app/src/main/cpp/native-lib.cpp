@@ -35,9 +35,6 @@ struct Vector2
 
 // Declare all used constants
 
-// Resolution constant
-const int RES = 480;
-
 // ROI constants
 const float ROI_WIDTH = 0.8;
 const float ROI_HEIGHT = 0.125;
@@ -62,7 +59,6 @@ const float CORNERS_MIN_DIST = 15.0;
 const bool CORNERS_HARRIS = false;
 
 // Vertical lines constants
-const float LINE_MAX = 0.9;
 const float LINE_MIN = 0.3;
 const float LINE_ANGLE_MIN = 0.875; // RAD
 
@@ -70,7 +66,7 @@ const float LINE_ANGLE_MIN = 0.875; // RAD
 const float ANGLE_MAX = 0.175; // RAD
 const float LENGTH_DIFF_MAX = 0.12;
 const float ASPECT_RATIO_MIN = 0.3;
-const float ASPECT_RATIO_MAX = 0.7;
+const float ASPECT_RATIO_MAX = 0.8;
 const float LENGTH_HOR_DIFF_MAX = 1.2;
 const float LENGTH_HOR_DIFF_MIN = 0.7;
 const float RECTANGLE_THRESH = 10.0;
@@ -79,7 +75,7 @@ const float RECTANGLE_OPPOSITE_THRESH = 10.0;
 // Comparison of rectangles to edges constants
 const float RECT_THRESH = 0.85;
 const float LINE_THRESH = 0.5;
-const int LINE_WIDTH = 5;
+const int LINE_WIDTH = 4;
 const float BOT_LINE_BONUS = 0.25;
 
 // Selection of best candidate constants
@@ -87,27 +83,25 @@ const float UPVOTE_FACTOR = 1.2;
 const float DOOR_IN_DOOR_DIFF_THRESH = 18.0; // Divider of image height
 const float COLOR_DIFF_THRESH = 50.0;
 const float ANGLE_DEVIATION_THRESH = 10.0;
-const float CLOSE_TO_INPUT_THRESH = 22.0;
+const float CLOSE_TO_INPUT_THRESH = 20.0;
 
 // Declare all used functions
-bool detect(Mat& image, Vector2 inputPoint, vector<Point2f>& result);
+bool detect(Mat& image, Point2f inputPoint, vector<Point2f>& result);
 vector<vector<Point2f>> cornersToVertLines(vector<Point2f> cornersBot, vector<Point2f> cornersTop);
 vector<vector<Point2f>> vertLinesToRectangles(vector<vector<Point2f>> lines);
 float compareRectangleToEdges(vector<Point2f> rect, Mat edges);
-vector<Point2f> selectBestCandidate(vector<vector<Point2f>> candidates, vector<float> scores, Point inputPoint, Mat gray);
+vector<Point2f> selectBestCandidate(vector<vector<Point2f>> candidates, vector<float> scores, Point2f inputPoint, Mat gray);
 
 float getDistance(Point2f p1, Point2f p2);
 float getOrientation(Point2f p1, Point2f p2);
 float getCornerAngle(Point2f p1, Point2f p2, Point2f p3);
 
-bool detect(Mat& image, Point inputPoint, vector<Point2f>& result)
+bool detect(Mat& image, Point2f inputPoint, vector<Point2f>& result)
 {
     // Scale image down
     // NOTE: the image comes in downscaled
     int width = image.size().width;
     int height = image.size().height;
-    float ratio = float(height) / float(width);
-    // resize(image, image, Size(RES, int(RES * ratio)), 0.0, 0.0, INTER_AREA);*/
     // NOTE: different interpolation methods can be used
 
     // Convert to grayscale
@@ -127,6 +121,7 @@ bool detect(Mat& image, Point inputPoint, vector<Point2f>& result)
 
     // Find ROI's based on user input
     Mat maskBot, maskTop;
+    vector<Point2f> cornersBot, cornersTop;
 
     // Bottom ROI
     int roiBotWidth = width * ROI_WIDTH;
@@ -141,7 +136,7 @@ bool detect(Mat& image, Point inputPoint, vector<Point2f>& result)
     maskBot(roiBot) = 1;
 
     // Top ROI
-    int lowLineBot = roiBot.y + (roiBot.height / 2);
+    int lowLineBot = roiBot.y + roiBot.height;
     int roiTopHeight = lowLineBot - (LINE_MIN * height);
 
     Point polygonPoints[4] = {
@@ -155,8 +150,6 @@ bool detect(Mat& image, Point inputPoint, vector<Point2f>& result)
     fillConvexPoly(maskTop, polygonPoints, 4, cv::Scalar(255));
 
     // Find corners using the given masks
-    vector<Point2f> cornersBot, cornersTop;
-
     goodFeaturesToTrack(blurred, cornersBot, CORNERS_MAX, CORNERS_BOT_QUALITY, CORNERS_MIN_DIST, maskBot, 3, CORNERS_HARRIS);
     goodFeaturesToTrack(blurred, cornersTop, CORNERS_MAX, CORNERS_TOP_QUALITY, CORNERS_MIN_DIST, maskTop, 3, CORNERS_HARRIS);
 
@@ -198,7 +191,6 @@ bool detect(Mat& image, Point inputPoint, vector<Point2f>& result)
 vector<vector<Point2f>> cornersToVertLines(vector<Point2f> cornersBot, vector<Point2f> cornersTop)
 {
     vector<vector<Point2f>> lines;
-    vector<bool> done;
 
     for (int i = 0; i < cornersBot.size(); i++)
     {
@@ -326,7 +318,7 @@ float compareRectangleToEdges(vector<Point2f> rect, Mat edges)
         int j = (i + 1) % 4;
 
         Mat mask = Mat::zeros(edges.size(), CV_8U);
-        cv::line(mask, rect[i], rect[j], 1, LINE_WIDTH);
+        line(mask, rect[i], rect[j], 1, LINE_WIDTH);
 
         // While this works, there might be a better option without copy
         Mat roi;
@@ -358,7 +350,7 @@ float compareRectangleToEdges(vector<Point2f> rect, Mat edges)
 }
 
 // Select the candidate by comparing their scores, score boni if special requirements are met
-vector<Point2f> selectBestCandidate(vector<vector<Point2f>> candidates, vector<float> scores, Point inputPoint, Mat gray)
+vector<Point2f> selectBestCandidate(vector<vector<Point2f>> candidates, vector<float> scores, Point2f inputPoint, Mat gray)
 {
     for (int i = 0; i < candidates.size(); i++)
     {
@@ -446,27 +438,40 @@ extern "C" {
     bool ProcessImage(Vector2* result, Color32* rawImage, Vector2 userInput, int width, int height, bool rotation)
     {
         // Form input values to OpenCV types
+        // NOTE: the image comes in rotated, hence height and width are flipped
         Mat image(height, width, CV_8UC4, rawImage);
+        // NOTE: options to make rawImage a reference, Color32** rawImage
+        //Mat inImage(height, width, CV_8UC4, *rawImage);
+        //Mat image;
+        //inImage.copyTo(image);
+
+
         vector<Point2f> door;
-        Point inputPoint = Point(userInput.x, userInput.y);
+        Point2f inputPoint = Point2f(userInput.x, userInput.y);
 
         if (rotation) {
             // NOTE: the image is already flipped in C#
-            // flip(image, image, 1);
+            //flip(image, image, 2);
             rotate(image, image, ROTATE_90_CLOCKWISE);
-            resize(image, image, Size(image.cols, image.rows), 0, 0, INTER_LINEAR);
+            resize(image, image, Size(image.cols, image.rows));
         }
 
+        //resize(image, image, Size(image.cols, image.rows), 0, 0, INTER_LINEAR);
+
         bool success = detect(image, inputPoint, door);
+
+        //circle(inImage, inputPoint, 10, Scalar(255, 0, 0), cv::FILLED);
 
         if (success)
         {
             // Write found door corners into referenced result array
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < 4; i++)
             {
                 Vector2 &vec = result[i];
                 vec.x = door[i].x;
                 vec.y = door[i].y;
+
+                //circle(inImage, door[i], 5, Scalar(0, 0, 255), cv::FILLED);
             }
 
             return true;

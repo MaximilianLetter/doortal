@@ -48,7 +48,7 @@ public class TextManager : MonoBehaviour
                 content.text = "For setup, scan the ground by moving your device until the floor is detected.";
                 break;
             case TextContent.onboardingComplete:
-                content.text = "Ground was detected.\nGo find a door to open a portal.";
+                content.text = "Ground was detected.\nGo find a door to open a portal by touching on the doorstep.";
                 Invoke("HideNotification", displayTimeLong);
                 break;
             case TextContent.noGround:

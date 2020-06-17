@@ -15,8 +15,8 @@ public class ImageToWorld : MonoBehaviour
     public TextManager textManager;
 
     public GameObject placementHelpers;
-    private GameObject placementPlane;
-    private GameObject placementCollider;
+    private GameObject placementColliderObj;
+    private Collider placementCollider;
 
     public GameObject doorMarker;
 
@@ -43,21 +43,32 @@ public class ImageToWorld : MonoBehaviour
 
     private bool readyToPlace = false;
 
-    void Start()
+    IEnumerator Start()
     {
+        OnboardingManager mng = FindObjectOfType<OnboardingManager>();
+
         uiLineRenderer = doorIndicator.transform.Find("UI LineRenderer").GetComponent<UILineRenderer>();
         doorButton = doorIndicator.transform.Find("DoorButton").GetComponent<RectTransform>();
         rayManager = FindObjectOfType<ARRaycastManager>();
         cam = Camera.main;
 
-        // Extract the two placement helper objects from parent
-        placementPlane = placementHelpers.transform.GetChild(0).gameObject;
-        placementCollider = placementHelpers.transform.GetChild(1).gameObject;
-        //placementHelpers.SetActive(false);
+        // Extract needed placement helper objects from parent
+        placementColliderObj = placementHelpers.transform.GetChild(1).gameObject;
 
-        cloud = FindObjectOfType<ARPointCloud>();
+        // Get the collider attached to the child object
+        placementCollider = placementColliderObj.GetComponentInChildren<Collider>();
 
         scale = FindObjectOfType<ScalingManager>();
+
+        // The point cloud needs a moment to be created by the pointCloudManager,
+        // therefor wait until onboarding is done
+        while (!mng.GetComplete())
+        {
+            yield return null;
+        }
+
+        cloud = FindObjectOfType<ARPointCloud>();
+        Debug.Log(cloud);
     }
 
 
@@ -499,51 +510,32 @@ public class ImageToWorld : MonoBehaviour
         // TODO -> rotation von boden zu oben ist meist 340° oder ähnliches -> differenz zu 0 / 360 sollte als rotation aufgenommen werden
 
         float height = Vector3.Distance(bottomCenter, topCenter);
-        Debug.Log("ImageToWorld, height: " + height);
-
-        // Destroy the used quad
-        //Destroy(quad);
-        //helperQuad.SetActive(false);
-
 
 
         // Check if there are really points behind the detected rectangle to verify it is a door
-        // NOTE: First crappy version
-        //ARPointCloud cloud = FindObjectOfType<ARPointCloud>();
 
-        //// Scale and position the collider box according to the measured height
-        //placementCollider.transform.localPosition = new Vector3(0, height / 2, 0);
-        //placementCollider.transform.localScale = new Vector3(width, height, 1);
+        // Scale and position the collider box according to the measured height
+        placementColliderObj.transform.localPosition = new Vector3(0, height / 2, 0);
+        placementColliderObj.transform.localScale = new Vector3(width, height, 1);
 
-        //// Sync the transform changes to be able to use the collider function
-        //Physics.SyncTransforms();
+        // Sync the transform changes to be able to use the collider function
+        Physics.SyncTransforms();
 
-        //// Get the collider attached to the child object
-        //Collider collider = placementCollider.GetComponentInChildren<Collider>();
-        
-        //int count = 0;
-        //bool spaceBehindDoor = false;
-        //foreach (Vector3 point in cloud.positions)
-        //{
-        //    count++;
-        //    if (collider.bounds.Contains(point))
-        //    {
-        //        Debug.Log("THERE IS A FURTHER POINT");
-        //        spaceBehindDoor = true;
-        //        break;
-        //    }
-        //}
-        //Debug.Log("POINTS: " + count);
-        //if (!spaceBehindDoor)
-        //{
-        //    Debug.Log("no fitting point found");
-        //    textManager.ShowNotification(TextContent.noRealDoor);
-        //    return;
-        //}
+        bool spaceBehindDoor = false;
+        foreach (Vector3 point in cloud.positions)
+        {
+            if (placementCollider.bounds.Contains(point))
+            {
+                spaceBehindDoor = true;
+                break;
+            }
+        }
 
-        // The use of the placement helpers is done, deactivate them
-        //placementHelpers.SetActive(false);
-
+        if (!spaceBehindDoor)
+        {
+            textManager.ShowNotification(TextContent.noRealDoor);
+            return;
+        }
 
         // Spawn object
         portalManager.SpawnObject(bottomCenter, rotation, width, height);
