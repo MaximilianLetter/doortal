@@ -25,7 +25,6 @@ public class TouchManager : MonoBehaviour
     private bool singleTouchPossible;
 
     public ButtonManager btnManager;
-    public PortalManager portalManager;
     public CameraImageManipulation cameraImageManager;
 
     private ScalingManager scale;

@@ -255,6 +255,10 @@ public class PortalManager : MonoBehaviour
             originalScale = obj.transform.localScale;
         }
 
+        // Door detection needs more time than a normal frame
+        // to display the full animation, wait until the next frame
+        yield return null;
+
         float currentTime = 0.0f;
 
         do
