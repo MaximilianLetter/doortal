@@ -384,6 +384,13 @@ public class ImageToWorld : MonoBehaviour
     //}
 
     // Place the object based on the current proposed door
+
+
+    /// <summary>
+    /// Convert a list of points to 3D transform information including position, rotation, width and height.
+    /// </summary>
+    /// <param name="pointList">List of 2D points.</param>
+    /// <returns>No return value.</returns>
     public void PlaceObject(List<Vector2> pointList)
     {
         if (!readyToPlace) return;
