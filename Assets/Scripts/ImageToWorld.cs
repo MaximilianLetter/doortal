@@ -145,7 +145,6 @@ public class ImageToWorld : MonoBehaviour
     {
         if (foundNew)
         {
-            Debug.Log(arr[0]);
             // Check if last frame something was found to avoid 1 frame flickerings
             if (!foundStatus)
             {

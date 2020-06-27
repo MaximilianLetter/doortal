@@ -184,16 +184,6 @@ bool detect(Mat inputGray, vector<Point2f>points, vector<float>pointDepths, vect
     vector<float> rectDepthDiffs = {};
     vector<vector<Point2f>> rectangles = vertLinesToRectangles(rectDepthDiffs, lines, lineDepths, lineLengths, depthRange);
 
-
-    //TESTING
-    doorArr = {
-            Point2f(rectangles.size(), 1337.0),
-            Point2f(0.0, 0.0),
-            Point2f(30.0, 30.0),
-            Point2f(40.0, 40.0)
-    };
-    return true;
-
     // NOTE: this could be done in vertLinesToRectangles aswell
     // Compare the found rectangles to the edge image
     vector<vector<Point2f>> candidates;
@@ -212,12 +202,18 @@ bool detect(Mat inputGray, vector<Point2f>points, vector<float>pointDepths, vect
     }
     rectDepthDiffs = updDepthDiffs;
 
+    //TESTING
+    /*doorArr = {
+            Point2f(candidates.size(), 1000.0),
+            Point2f(0.0, 0.0),
+            Point2f(30.0, 30.0),
+            Point2f(40.0, 40.0)
+    };
+    return true;*/
 
     // Select the best candidate out of the given rectangles
     if (candidates.size())
     {
-
-
         vector<Point2f> door = selectBestCandidate(candidates, rectDepthDiffs, depthRange, scores);
         doorArr = door;
 
@@ -396,10 +392,10 @@ vector<vector<Point2f>> vertLinesToRectangles(vector<float>& rectDepthDiffs, vec
 
             if (!rectangular) continue;
 
-
             // Sort in order: leftBot > leftTop > rightTop > rightBot
             vector<Point2f> group = { lines[i][1], lines[i][0], lines[j][0], lines[j][1] };
             rects.push_back(group);
+            rectDepthDiffs.push_back(depthDiff);
         }
     }
 
