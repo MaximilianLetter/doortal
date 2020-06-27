@@ -124,7 +124,7 @@ public class TouchManager : MonoBehaviour
 
                         // Detect on camera image
                         Vector2 imgPoint = scale.PointToDetection(touch.position);
-                        cameraImageManager.DetectOnImage(imgPoint);                        
+                        //cameraImageManager.DetectOnImage(imgPoint);
                     }
                     break;
             }

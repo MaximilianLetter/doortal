@@ -31,7 +31,6 @@ public class CameraImageManipulation : MonoBehaviour
     private unsafe static extern bool ProcessImage(
         Vector2* resultArray,
         Color32[] rawImage,
-        Vector2 userInput,
         int width,
         int height,
         bool rotated
@@ -39,14 +38,14 @@ public class CameraImageManipulation : MonoBehaviour
 
     // NOTE: capsulating the extern function for manipulating the result array
     // https://stackoverflow.com/questions/53174216/update-vector3-array-from-c-native-plugin
-    bool ProcessImage(Vector2[] vecArray, Color32[] rawImage, Vector2 userInput, int width, int height, bool rotated)
+    bool ProcessImage(Vector2[] vecArray, Color32[] rawImage, int width, int height, bool rotated)
     {
         unsafe
         {
             // Pin array then send to C++
             fixed (Vector2* vecPtr = vecArray)
             {
-                return ProcessImage(vecPtr, rawImage, userInput, width, height, rotated);
+                return ProcessImage(vecPtr, rawImage, width, height, rotated);
             }
         }
     }
@@ -58,14 +57,21 @@ public class CameraImageManipulation : MonoBehaviour
 
         scale = FindObjectOfType<ScalingManager>();
         imageToWorld = FindObjectOfType<ImageToWorld>();
+        cameraManager = Camera.main.GetComponent<ARCameraManager>();
 
         while (!mng.GetComplete())
         {
             yield return null;
         }
 
+        cameraManager.frameReceived += OnCameraFrameReceived;
+
         Debug.Log("CameraImageManipulation -> Ready");
-        cameraManager = Camera.main.GetComponent<ARCameraManager>();
+    }
+
+    void OnDisable()
+    {
+        if (cameraManager) cameraManager.frameReceived -= OnCameraFrameReceived;
     }
 
     // NOTE: part of the following steps to setup image access on CPU come from
@@ -73,7 +79,7 @@ public class CameraImageManipulation : MonoBehaviour
     // other names than described in the documentation.
     // e.g. cameraManager.frameReceived instead of cameraManager.cameraFrameReceived
     // https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@3.1/manual/cpu-camera-image.html
-    public unsafe void DetectOnImage(Vector2 userInput)
+    unsafe void OnCameraFrameReceived(ARCameraFrameEventArgs eventArgs)
     {
         XRCameraImage image;
         if (!cameraManager.TryGetLatestImage(out image))
@@ -126,10 +132,10 @@ public class CameraImageManipulation : MonoBehaviour
         Vector2[] resultArray = new Vector2[CORNERS];
 
         // Call to C++ Code
-        bool success = ProcessImage(resultArray, rawPixels, userInput, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y, true);
+        bool success = ProcessImage(resultArray, rawPixels, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y, true);
 
-        imageToWorld.TransferIntoWorld(success, resultArray);
-        //imageToWorld.ShowIndicator(success, resultArray);
+        //imageToWorld.TransferIntoWorld(success, resultArray);
+        imageToWorld.ShowWorldIndicator(success, resultArray);
 
         // Done with our temporary data
         buffer.Dispose();

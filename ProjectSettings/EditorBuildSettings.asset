@@ -8,10 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/_Scenes/MainScene.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
-  - enabled: 0
+  - enabled: 1
     path: Assets/_Scenes/WorldMarkerScene.unity
     guid: 2ed8e69e5ab7d6442a1437c3e87c75f2
-  - enabled: 1
+  - enabled: 0
     path: Assets/_Scenes/InputToDetect.unity
     guid: 6d2bc63993bd638418c4e614e9e7e984
   m_configObjects:

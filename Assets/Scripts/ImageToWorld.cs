@@ -68,7 +68,6 @@ public class ImageToWorld : MonoBehaviour
         }
 
         cloud = FindObjectOfType<ARPointCloud>();
-        Debug.Log(cloud);
     }
 
 
@@ -146,15 +145,16 @@ public class ImageToWorld : MonoBehaviour
     {
         if (foundNew)
         {
+            Debug.Log(arr[0]);
             // Check if last frame something was found to avoid 1 frame flickerings
             if (!foundStatus)
             {
                 foundStatus = true;
-                foundTime = 0.0f;
+                //foundTime = 0.0f;
                 return;
             }
 
-            foundTime = 0.0f;
+            //foundTime = 0.0f;
 
             // Scale and offset the result array
             List<Vector2> door = new List<Vector2>();
@@ -163,22 +163,21 @@ public class ImageToWorld : MonoBehaviour
                 door.Add(scale.PointToScreen(arr[i]));
             }
 
-            readyToPlace = true;
             PlaceMarker(door);
         }
-        else
-        {
-            foundTime += Time.deltaTime;
+        //else
+        //{
+        //    foundTime += Time.deltaTime;
 
-            if (foundTime > holdTime)
-            {
-                // If no new positive input appears, reset everything
-                foundStatus = false;
+        //    if (foundTime > holdTime)
+        //    {
+        //        // If no new positive input appears, reset everything
+        //        foundStatus = false;
 
-                if (doorMarker.activeSelf) doorMarker.SetActive(false);
-                readyToPlace = false;
-            }
-        }
+        //        if (doorMarker.activeSelf) doorMarker.SetActive(false);
+        //        readyToPlace = false;
+        //    }
+        //}
     }
 
     public void TransferIntoWorld(bool success, Vector2[] arr)
@@ -202,8 +201,6 @@ public class ImageToWorld : MonoBehaviour
 
     private void PlaceMarker(List<Vector2> points)
     {
-        if (!readyToPlace) return;
-
         // Order by y so top points and bottom points can be seperated
         // pointList.Sort((a, b) => a.y.CompareTo(b.y));
         points = points.OrderBy(point => point.y).ToList();
