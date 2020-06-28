@@ -32,9 +32,9 @@ struct Vector2
 // WATCHING: not enough frames to be stable
 // stable: enough points and enough frames lived by
 enum State { UNSTABLE, WATCHING, STABLE };
-const int MIN_POINTS_COUNT = 30;
+const int MIN_POINTS_COUNT = 20;
 const int MIN_FRAME_COUNT = 60;
-const float MIN_DEPTH_DISTANCE = 200.0;
+const float MIN_DEPTH_DISTANCE = 150.0;
 const int DETECTION_FAILED_RESET_COUNT = 7;
 
 // Image conversion and processing constants
@@ -46,15 +46,15 @@ const double CANNY_UPPER = 1.33;
 
 // NOTE: these values need to be improved to ensure to always find the corners of a door
 // Corner detection constants
-const int CORNERS_MAX = 100;
+const int CORNERS_MAX = 80;
 const float CORNERS_QUALITY = 0.01;
-const float CORNERS_MIN_DIST = 6.0;
+const float CORNERS_MIN_DIST = 3.0;
 
 // Hough line constants
-const int HOUGH_LINE_WIDTH = 5;
-const int HOUGH_LINE_ADDITIONAL_WIDTH = 2;
-const int HOUGH_LINE_WIDTH_MAX = 20;
-const float HOUGH_LINE_DIFF_THRESH_PIXEL = 15;
+const int HOUGH_LINE_WIDTH = 4;
+const int HOUGH_LINE_ADDITIONAL_WIDTH = 1;
+const int HOUGH_LINE_WIDTH_MAX = 15;
+const float HOUGH_LINE_DIFF_THRESH_PIXEL = 10;
 const float HOUGH_LINE_DIFF_THRESH_ANGLE = 0.25;
 const int HOUGH_COUNT_LIMIT = 20;
 
@@ -99,7 +99,7 @@ double getMedian(Mat channel);
 
 // -------------------------------------------------------------------------------------------------
 // These values would normally be defined in a main function
-Rect topRect = Rect(0, 0, 360, 480 * 0.4);
+Rect topRect = Rect(0, 0, 120, 180 * 0.4);
 
 // Optical flow setup
 vector<Point2f> p0, p1;
