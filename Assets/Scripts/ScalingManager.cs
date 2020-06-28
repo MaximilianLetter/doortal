@@ -6,9 +6,10 @@ public class ScalingManager : MonoBehaviour
 {
     // 120p -> 0.25f -> (120, 160)
     // 180p -> 0.375f -> (180, 240)
+    // 240p -> 0.5f -> (240, 360)
     // 360p -> 0.75f -> (360, 480)
     // 480p -> 1.0f -> (480, 640)
-    public float detectionScaleFactor = 0.75f;
+    public float detectionScaleFactor = 0.5f;
 
     private Vector2 screenSize;
     private Vector2 arImageSize = new Vector2(480, 640);
