@@ -60,7 +60,7 @@ public class TextManager : MonoBehaviour
                 Invoke("HideNotification", displayTime);
                 break;
             case TextContent.noRealDoor:
-                content.text = "It seems that is not really a doorway.";
+                content.text = "It seems that there is no space behind.";
                 Invoke("HideNotification", displayTime);
                 break;
             case TextContent.doorCleared:

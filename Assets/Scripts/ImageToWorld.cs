@@ -8,6 +8,7 @@ using UnityEngine.XR.ARSubsystems;
 
 using System.Linq; // TODO what is this?
 using UnityEngine.UI;
+using System.Xml.Linq;
 
 public class ImageToWorld : MonoBehaviour
 {
@@ -33,6 +34,19 @@ public class ImageToWorld : MonoBehaviour
     private float foundTime = 0.0f;
     private bool foundStatus = false;
 
+    // Optical flow values
+    private List<List<Vector2>> list2D;
+    private List<Vector3> list3D;
+    private int doorsMissed;
+    private bool cloudCheck;
+    private bool readyToPlace;
+
+    private const int MAX_COUNT_2D_DOORS = 10;
+    private const int COUNT_3D_DOORS = 10;
+    private const int DOOR_MISSED_THRESH = 5;
+    private const float DOOR_SAME_POSITION_RATIO = 0.6f;
+    private const float DOOR_SAME_POSITION_THRESH = 0.25f;
+
     // These values are not used but could be if a stricter smoothing algorithm is implemented
     //private int resolution = Screen.width; // END resolution
     //private float DIFF_THRESH = Screen.width / 20;
@@ -41,7 +55,6 @@ public class ImageToWorld : MonoBehaviour
     //private List<Vector2> previousDoor = new List<Vector2>();
     //private int prevCounter = 0;
 
-    private bool readyToPlace = false;
 
     IEnumerator Start()
     {
@@ -59,6 +72,13 @@ public class ImageToWorld : MonoBehaviour
         placementCollider = placementColliderObj.GetComponentInChildren<Collider>();
 
         scale = FindObjectOfType<ScalingManager>();
+
+        // Setup tracking values
+        list2D = new List<List<Vector2>>();
+        list3D = new List<Vector3>();
+        doorsMissed = 0;
+        cloudCheck = false;
+        readyToPlace = false;
 
         // The point cloud needs a moment to be created by the pointCloudManager,
         // therefor wait until onboarding is done
@@ -145,38 +165,23 @@ public class ImageToWorld : MonoBehaviour
     {
         if (foundNew)
         {
-            // Check if last frame something was found to avoid 1 frame flickerings
-            if (!foundStatus)
-            {
-                foundStatus = true;
-                //foundTime = 0.0f;
-                return;
-            }
-
-            //foundTime = 0.0f;
-
             // Scale and offset the result array
-            List<Vector2> door = new List<Vector2>();
+            List<Vector2> doorPoints = new List<Vector2>();
             for (int i = 0; i < 4; i++)
             {
-                door.Add(scale.PointToScreen(arr[i]));
+                doorPoints.Add(scale.PointToScreen(arr[i]));
             }
 
-            PlaceMarker(door);
+            ConvertTo3D(doorPoints);
         }
-        //else
-        //{
-        //    foundTime += Time.deltaTime;
-
-        //    if (foundTime > holdTime)
-        //    {
-        //        // If no new positive input appears, reset everything
-        //        foundStatus = false;
-
-        //        if (doorMarker.activeSelf) doorMarker.SetActive(false);
-        //        readyToPlace = false;
-        //    }
-        //}
+        else
+        {
+            doorsMissed++;
+            if (doorsMissed > DOOR_MISSED_THRESH)
+            {
+                ResetTrackingValues();
+            }
+        }
     }
 
     public void TransferIntoWorld(bool success, Vector2[] arr)
@@ -198,7 +203,7 @@ public class ImageToWorld : MonoBehaviour
         }
     }
 
-    private void PlaceMarker(List<Vector2> points)
+    private void ConvertTo3D(List<Vector2> points)
     {
         // Order by y so top points and bottom points can be seperated
         // pointList.Sort((a, b) => a.y.CompareTo(b.y));
@@ -218,6 +223,8 @@ public class ImageToWorld : MonoBehaviour
         rayManager.Raycast(bp1, hits, TrackableType.Planes);
         if (hits.Count == 0)
         {
+            list2D.Add(points);
+            CheckList2D();
             return;
         }
         var bp1_v3 = hits[0].pose.position;
@@ -225,6 +232,8 @@ public class ImageToWorld : MonoBehaviour
         rayManager.Raycast(bp2, hits, TrackableType.Planes);
         if (hits.Count == 0)
         {
+            list2D.Add(points);
+            CheckList2D();
             return;
         }
         var bp2_v3 = hits[0].pose.position;
@@ -236,7 +245,15 @@ public class ImageToWorld : MonoBehaviour
 
         // Get the center between the bottom points
         Vector3 bottomCenter = Vector3.Lerp(bp1_v3, bp2_v3, 0.5f);
-        //Debug.Log("ImageToWorld, bottomCenter: " + bottomCenter);
+
+        if (CheckList3D(bottomCenter))
+        {
+            readyToPlace = true;
+        }
+        else
+        {
+            list3D.Add(bottomCenter);
+        }
 
         // Calculate rotation
         Vector3 direction = (bp1_v3 - bp2_v3).normalized;
@@ -245,10 +262,8 @@ public class ImageToWorld : MonoBehaviour
 
         Vector3 camDir = cam.transform.forward;
         float dot = Vector3.Dot(camDir, rotation * Vector3.forward);
-        //Debug.Log("DOT: " + dot);
         if (dot < 0)
         {
-            //Debug.Log("FLIP BY DOT PRODUCT");
             // If portal is facing away, flip it
             rotation *= Quaternion.Euler(0, 180, 0);
         }
@@ -279,14 +294,14 @@ public class ImageToWorld : MonoBehaviour
         Vector3 topCenter = Vector3.zero;
 
         // Raycast did not hit the correct plane and is therefor not usable
-        if (tp1_v3 == Vector3.zero || tp2_v3 == Vector3.zero)
-        {
-            Debug.Log("RAYCAST DID NOT HIT");
-        }
-        else
-        {
-            topCenter = Vector3.Lerp(tp1_v3, tp2_v3, 0.5f);
-        }
+        //if (tp1_v3 == Vector3.zero || tp2_v3 == Vector3.zero)
+        //{
+        //    Debug.Log("RAYCAST DID NOT HIT");
+        //}
+        //else
+        //{
+        topCenter = Vector3.Lerp(tp1_v3, tp2_v3, 0.5f);
+        //}
         //Debug.Log("ImageToWorld, topCenter: " + topCenter);
 
         float height = Vector3.Distance(bottomCenter, topCenter);
@@ -306,35 +321,98 @@ public class ImageToWorld : MonoBehaviour
         //Physics.SyncTransforms();
 
         // Get the collider attached to the child object
-        //Collider collider = placementCollider.GetComponentInChildren<Collider>();
+        Collider collider = placementCollider.GetComponentInChildren<Collider>();
 
-        //int count = 0;
+        int count = 0;
         //bool spaceBehindDoor = false;
-        //foreach (Vector3 point in cloud.positions)
-        //{
-        //    count++;
-        //    if (collider.bounds.Contains(point))
-        //    {
-        //        Debug.Log("THERE IS A FURTHER POINT");
-        //        spaceBehindDoor = true;
-        //        break;
-        //    }
-        //}
-        ////Debug.Log("POINTS: " + count);
-        //if (!spaceBehindDoor)
+        foreach (Vector3 point in cloud.positions)
+        {
+            count++;
+            if (collider.bounds.Contains(point))
+            {
+                //Debug.Log("THERE IS A FURTHER POINT");
+                cloudCheck = true;
+                break;
+            }
+        }
+        //Debug.Log("POINTS: " + count);
+        //if (spaceBehindDoor)
         //{
         //    //Debug.Log("no fitting point found");
         //    //textManager.ShowNotification(TextContent.noRealDoor);
-        //    return;
+        //    cloudCheck = true;
         //}
 
         //Debug.Log("ready to set the world marker");
 
         // Set object position, rotation and scale
-        doorMarker.transform.SetPositionAndRotation(bottomCenter, rotation);
-        doorMarker.transform.localScale = new Vector3(width, height, 1);
+        //doorMarker.transform.SetPositionAndRotation(bottomCenter, rotation);
+        //doorMarker.transform.localScale = new Vector3(width, height, 1);
 
-        if (!doorMarker.activeSelf) doorMarker.SetActive(true);
+        //if (!doorMarker.activeSelf) doorMarker.SetActive(true);
+        if (readyToPlace)
+        {
+            ResetTrackingValues();
+            portalManager.SpawnObject(bottomCenter, rotation, width, height);
+        }
+    }
+
+    private void CheckList2D()
+    {
+        if (list2D.Count > MAX_COUNT_2D_DOORS)
+        {
+            ResetTrackingValues();
+
+            textManager.ShowNotification(TextContent.noGround);
+        }
+    }
+
+    // check if the newly found position appears often in the already tracked ones
+    private bool CheckList3D(Vector3 newPos)
+    {
+        int foundPositionsCount = list3D.Count;
+        if (foundPositionsCount < COUNT_3D_DOORS)
+        {
+            return false;
+        }
+
+        int samePositionCount = 0;
+        // Check the last found position against all existing ones
+        for (int i = 0; i < foundPositionsCount; i++)
+        {
+            var dist = Vector3.Distance(newPos, list3D[i]);
+            if (dist < DOOR_SAME_POSITION_THRESH)
+            {
+                samePositionCount++;
+            }
+        }
+
+        // Make sure the list stays at COUNT_3D_DOORS and does not grow larger
+        list3D.RemoveAt(0);
+
+        // If most of the tracked positions are like the new one
+        if ((samePositionCount / foundPositionsCount) > DOOR_SAME_POSITION_RATIO)
+        {
+            if (!cloudCheck)
+            {
+                textManager.ShowNotification(TextContent.noRealDoor);
+                ResetTrackingValues();
+                return false;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    private void ResetTrackingValues()
+    {
+        doorsMissed = 0;
+        cloudCheck = false;
+        readyToPlace = false;
+
+        list2D.Clear();
+        list3D.Clear();
     }
 
     // NOTE: this function is not used but can be for a better smoothing
@@ -396,11 +474,11 @@ public class ImageToWorld : MonoBehaviour
         // Order by y so top points and bottom points can be seperated
         // pointList.Sort((a, b) => a.y.CompareTo(b.y));
         pointList = pointList.OrderBy(point => point.y).ToList();
-        Debug.Log("sorted points");
-        pointList.ForEach(p =>
-        {
-            Debug.Log(p);
-        });
+        //Debug.Log("sorted points");
+        //pointList.ForEach(p =>
+        //{
+        //    Debug.Log(p);
+        //});
 
         // Top points
         var tp1 = pointList[2];
