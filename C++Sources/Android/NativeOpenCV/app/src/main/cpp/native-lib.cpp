@@ -99,7 +99,7 @@ double getMedian(Mat channel);
 
 // -------------------------------------------------------------------------------------------------
 // These values would normally be defined in a main function
-Rect topRect = Rect(0, 0, 360, 480 * 0.4);
+Rect topRect = Rect(0, 0, 240, 360 * 0.4);
 
 // Optical flow setup
 vector<Point2f> p0, p1;
