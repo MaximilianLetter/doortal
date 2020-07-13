@@ -23,7 +23,7 @@ public class ShowFPS : MonoBehaviour
         deltaTime += Time.deltaTime;
         if (deltaTime >= 1.0f)
         {
-            text.text = "FPS: " + frames;
+            text.text = frames.ToString();
 
             deltaTime = 0.0f;
             frames = 0;

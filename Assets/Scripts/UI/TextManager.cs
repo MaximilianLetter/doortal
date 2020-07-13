@@ -42,7 +42,6 @@ public class TextManager : MonoBehaviour
         {
             case TextContent.notSupported:
                 content.text = "Augmented Reality is not supported on your device.";
-                Invoke("HideNotification", displayTime);
                 break;
             case TextContent.scanGround:
                 content.text = "For setup, scan the ground by moving your device until the floor is detected.";
