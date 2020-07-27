@@ -55,7 +55,6 @@ public class ImageToWorld : MonoBehaviour
     //private List<Vector2> previousDoor = new List<Vector2>();
     //private int prevCounter = 0;
 
-
     IEnumerator Start()
     {
         OnboardingManager mng = FindObjectOfType<OnboardingManager>();
@@ -90,78 +89,13 @@ public class ImageToWorld : MonoBehaviour
         cloud = FindObjectOfType<ARPointCloud>();
     }
 
-
-    public void ShowIndicator(bool foundNew, Vector2[] arr)
-    {
-        if (foundNew)
-        {
-            // Check if last frame something was found to avoid 1 frame flickerings
-            if (!foundStatus)
-            {
-                foundStatus = true;
-                foundTime = 0.0f;
-                return;
-            }
-
-            foundTime = 0.0f;
-
-            // Start values for setting up button and icon on the detected door
-            Vector2 centroid = Vector2.zero;
-            float maxX = 0;
-            float minX = Screen.width;
-            float maxY = 0;
-            float minY = Screen.height;
-
-            // Scale and offset the result array
-            List<Vector2> door = new List<Vector2>();
-            for (int i = 0; i < 4; i++)
-            {
-                //Vector2 point = new Vector2((arr[i * 2] * scaleUp) + offset, arr[i * 2 + 1] * scaleUp);
-                Vector2 point = scale.PointToScreen(arr[i]);
-                door.Add(point);
-
-                centroid += point;
-                if (point.x > maxX) maxX = point.x;
-                if (point.x < minX) minX = point.x;
-                if (point.y > maxY) maxY = point.y;
-                if (point.y < minY) minY = point.y;
-            }
-            centroid *= 0.25f;
-            door.Add(scale.PointToScreen(arr[0]));
-
-            uiLineRenderer.Points = door.ToArray();
-
-            // Set up button and icon
-            doorButton.position = centroid;
-            doorButton.sizeDelta = new Vector2(maxX - minX, maxY - minY);
-
-            // If inactive, activate the line renderer and prepare to place an object
-            if (!doorIndicator.activeSelf)
-            {
-                doorIndicator.SetActive(true);
-                readyToPlace = true;
-            }
-        }
-        else
-        {
-            foundTime += Time.deltaTime;
-
-            if (foundTime > holdTime)
-            {
-                // If no new positive input appears, reset everything
-                foundStatus = false;
-
-                if (doorIndicator.activeSelf)
-                {
-                    doorIndicator.SetActive(false);
-                    readyToPlace = false;
-                }
-            }
-        }
-    }
-
-    // Directly convert the found points into a preview object in 3d world space
-    public void ShowWorldIndicator(bool foundNew, Vector2[] arr)
+    /// <summary>
+    /// Manage input from door detection. Manages the amount of missed detections.
+    /// </summary>
+    /// <param name="foundNew">If a door was found or not.</param>
+    /// <param name="arr">List of 2D points.</param>
+    /// <returns>No return value.</returns>
+    public void CheckConversion(bool foundNew, Vector2[] arr)
     {
         if (foundNew)
         {
@@ -184,25 +118,30 @@ public class ImageToWorld : MonoBehaviour
         }
     }
 
-    public void TransferIntoWorld(bool success, Vector2[] arr)
-    {
-        if (success)
-        {
-            List<Vector2> door = new List<Vector2>();
-            for (int i = 0; i < 4; i++)
-            {
-                door.Add(scale.PointToScreen(arr[i]));
-            }
+    //public void TransferIntoWorld(bool success, Vector2[] arr)
+    //{
+    //    if (success)
+    //    {
+    //        List<Vector2> door = new List<Vector2>();
+    //        for (int i = 0; i < 4; i++)
+    //        {
+    //            door.Add(scale.PointToScreen(arr[i]));
+    //        }
 
-            readyToPlace = true;
-            PlaceObject(door);
-        }
-        else
-        {
-            textManager.ShowNotification(TextContent.noDoorFound);
-        }
-    }
+    //        readyToPlace = true;
+    //        PlaceObject(door);
+    //    }
+    //    else
+    //    {
+    //        textManager.ShowNotification(TextContent.noDoorFound);
+    //    }
+    //}
 
+    /// <summary>
+    /// Convert a list of points to 3D transform information including position, rotation, width and height.
+    /// </summary>
+    /// <param name="pointList">List of 2D points.</param>
+    /// <returns>No return value.</returns>
     private void ConvertTo3D(List<Vector2> points)
     {
         // Order by y so top points and bottom points can be seperated
@@ -268,9 +207,6 @@ public class ImageToWorld : MonoBehaviour
             rotation *= Quaternion.Euler(0, 180, 0);
         }
 
-        // Get width for object
-        float width = Vector3.Distance(bp1_v3, bp2_v3);
-
         placementHelpers.transform.SetPositionAndRotation(bottomCenter, rotation);
 
         // Since the following raycasts are physics based, sync the placement helper transforms
@@ -283,41 +219,24 @@ public class ImageToWorld : MonoBehaviour
 
         ray = cam.ScreenPointToRay(tp1);
         Physics.Raycast(ray, out hit);
-        //Debug.Log("top raycast1: " + hit.point);
         tp1_v3 = hit.point;
 
         ray = cam.ScreenPointToRay(tp2);
         Physics.Raycast(ray, out hit);
-        //Debug.Log("top raycast2: " + hit.point);
         tp2_v3 = hit.point;
 
-        Vector3 topCenter = Vector3.zero;
+        Vector3 topCenter = Vector3.Lerp(tp1_v3, tp2_v3, 0.5f);
 
-        // Raycast did not hit the correct plane and is therefor not usable
-        //if (tp1_v3 == Vector3.zero || tp2_v3 == Vector3.zero)
-        //{
-        //    Debug.Log("RAYCAST DID NOT HIT");
-        //}
-        //else
-        //{
-        topCenter = Vector3.Lerp(tp1_v3, tp2_v3, 0.5f);
-        //}
-        //Debug.Log("ImageToWorld, topCenter: " + topCenter);
+        // Get width for object
+        float widthBot = Vector3.Distance(bp1_v3, bp2_v3);
+        float widthTop = Vector3.Distance(tp1_v3, tp2_v3);
+        float width = (widthBot + widthTop) / 2;
 
         float height = Vector3.Distance(bottomCenter, topCenter);
-        //Debug.Log("ImageToWorld, height: " + height);
-
-        // Check if there are really points behind the detected rectangle to verify it is a door
-        // NOTE: First crappy version
 
         // Scale and position the collider box according to the measured height
-        //placementCollider.transform.localPosition = new Vector3(0, height / 2, 0);
-        //placementCollider.transform.localScale = new Vector3(width, height, 1);
-
-        // Sync the transform changes to be able to use the collider function
-        //Physics.SyncTransforms();
-
-
+        placementCollider.transform.localPosition = new Vector3(0, height / 2, 0);
+        placementCollider.transform.localScale = new Vector3(width, height, 1);
         //Physics.SyncTransforms();
 
         // Get the collider attached to the child object
@@ -335,21 +254,7 @@ public class ImageToWorld : MonoBehaviour
                 break;
             }
         }
-        //Debug.Log("POINTS: " + count);
-        //if (spaceBehindDoor)
-        //{
-        //    //Debug.Log("no fitting point found");
-        //    //textManager.ShowNotification(TextContent.noRealDoor);
-        //    cloudCheck = true;
-        //}
-
-        //Debug.Log("ready to set the world marker");
-
-        // Set object position, rotation and scale
-        //doorMarker.transform.SetPositionAndRotation(bottomCenter, rotation);
-        //doorMarker.transform.localScale = new Vector3(width, height, 1);
-
-        //if (!doorMarker.activeSelf) doorMarker.SetActive(true);
+        
         if (readyToPlace)
         {
             ResetTrackingValues();
@@ -357,6 +262,10 @@ public class ImageToWorld : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Check if so many 2D positions were collected over time, that the conversion parameters need to be reset.
+    /// </summary>
+    /// <returns>No return value.</returns>
     private void CheckList2D()
     {
         if (list2D.Count > MAX_COUNT_2D_DOORS)
@@ -367,7 +276,11 @@ public class ImageToWorld : MonoBehaviour
         }
     }
 
-    // check if the newly found position appears often in the already tracked ones
+    /// <summary>
+    /// Check if the newly found position appears often enough in the already tracked positions.
+    /// </summary>
+    /// <param name="newPos">Newly created 3D position.</param>
+    /// <returns>Boolean</returns>
     private bool CheckList3D(Vector3 newPos)
     {
         int foundPositionsCount = list3D.Count;
@@ -405,6 +318,10 @@ public class ImageToWorld : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Reset all tracking Values to default. This is necessary if too many detections missed.
+    /// </summary>
+    /// <returns>No return value.</returns>
     private void ResetTrackingValues()
     {
         doorsMissed = 0;
@@ -465,160 +382,160 @@ public class ImageToWorld : MonoBehaviour
     /// </summary>
     /// <param name="pointList">List of 2D points.</param>
     /// <returns>No return value.</returns>
-    public void PlaceObject(List<Vector2> pointList)
-    {
-        if (!readyToPlace) return;
+    //public void PlaceObject(List<Vector2> pointList)
+    //{
+    //    if (!readyToPlace) return;
 
-        Debug.Log("----------------------------------------------------------");
+    //    Debug.Log("----------------------------------------------------------");
 
-        // Order by y so top points and bottom points can be seperated
-        // pointList.Sort((a, b) => a.y.CompareTo(b.y));
-        pointList = pointList.OrderBy(point => point.y).ToList();
-        //Debug.Log("sorted points");
-        //pointList.ForEach(p =>
-        //{
-        //    Debug.Log(p);
-        //});
+    //    // Order by y so top points and bottom points can be seperated
+    //    // pointList.Sort((a, b) => a.y.CompareTo(b.y));
+    //    pointList = pointList.OrderBy(point => point.y).ToList();
+    //    //Debug.Log("sorted points");
+    //    //pointList.ForEach(p =>
+    //    //{
+    //    //    Debug.Log(p);
+    //    //});
 
-        // Top points
-        var tp1 = pointList[2];
-        var tp2 = pointList[3];
+    //    // Top points
+    //    var tp1 = pointList[2];
+    //    var tp2 = pointList[3];
 
-        // Bottom points
-        var bp1 = pointList[0];
-        var bp2 = pointList[1];
+    //    // Bottom points
+    //    var bp1 = pointList[0];
+    //    var bp2 = pointList[1];
 
-        // Build Vector3 Points of bottom points via raycast
-        List<ARRaycastHit> hits = new List<ARRaycastHit>();
+    //    // Build Vector3 Points of bottom points via raycast
+    //    List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
-        rayManager.Raycast(bp1, hits, TrackableType.Planes);
-        if (hits.Count == 0)
-        {
-            textManager.ShowNotification(TextContent.noGround);
-            return;
-        }
-        var bp1_v3 = hits[0].pose.position;
-        //Debug.Log("Ground Rotation1 " + hits[hits.Count - 1].pose.rotation.eulerAngles);
+    //    rayManager.Raycast(bp1, hits, TrackableType.Planes);
+    //    if (hits.Count == 0)
+    //    {
+    //        textManager.ShowNotification(TextContent.noGround);
+    //        return;
+    //    }
+    //    var bp1_v3 = hits[0].pose.position;
+    //    //Debug.Log("Ground Rotation1 " + hits[hits.Count - 1].pose.rotation.eulerAngles);
 
-        rayManager.Raycast(bp2, hits, TrackableType.Planes);
-        if (hits.Count == 0)
-        {
-            textManager.ShowNotification(TextContent.noGround);
-            return;
-        }
-        var bp2_v3 = hits[0].pose.position;
-        //Debug.Log("Ground Rotation2 " + hits[hits.Count - 1].pose.rotation.eulerAngles);
+    //    rayManager.Raycast(bp2, hits, TrackableType.Planes);
+    //    if (hits.Count == 0)
+    //    {
+    //        textManager.ShowNotification(TextContent.noGround);
+    //        return;
+    //    }
+    //    var bp2_v3 = hits[0].pose.position;
+    //    //Debug.Log("Ground Rotation2 " + hits[hits.Count - 1].pose.rotation.eulerAngles);
 
-        // Unify the height of both points
-        float unifyY = (bp1_v3.y + bp2_v3.y) / 2;
-        bp1_v3.y = unifyY;
-        bp2_v3.y = unifyY;
+    //    // Unify the height of both points
+    //    float unifyY = (bp1_v3.y + bp2_v3.y) / 2;
+    //    bp1_v3.y = unifyY;
+    //    bp2_v3.y = unifyY;
 
-        // Get the center between the bottom points
-        Vector3 bottomCenter = Vector3.Lerp(bp1_v3, bp2_v3, 0.5f);
-        //Debug.Log("ImageToWorld, bottomCenter: " + bottomCenter);
+    //    // Get the center between the bottom points
+    //    Vector3 bottomCenter = Vector3.Lerp(bp1_v3, bp2_v3, 0.5f);
+    //    //Debug.Log("ImageToWorld, bottomCenter: " + bottomCenter);
 
-        // Calculate rotation
-        Vector3 direction = (bp1_v3 - bp2_v3).normalized;
-        Quaternion lookRotation = Quaternion.LookRotation(direction);
-        Quaternion rotation = lookRotation * Quaternion.Euler(0, 90.0f, 0);
+    //    // Calculate rotation
+    //    Vector3 direction = (bp1_v3 - bp2_v3).normalized;
+    //    Quaternion lookRotation = Quaternion.LookRotation(direction);
+    //    Quaternion rotation = lookRotation * Quaternion.Euler(0, 90.0f, 0);
 
-        Vector3 camDir = Camera.main.transform.forward;
-        float dot = Vector3.Dot(camDir, rotation * Vector3.forward);
-        Debug.Log("DOT: " + dot);
-        if (dot < 0)
-        {
-            // If portal is facing away, flip it
-            rotation *= Quaternion.Euler(0, 180, 0);
-        }
-        Debug.Log(rotation.eulerAngles);
+    //    Vector3 camDir = Camera.main.transform.forward;
+    //    float dot = Vector3.Dot(camDir, rotation * Vector3.forward);
+    //    Debug.Log("DOT: " + dot);
+    //    if (dot < 0)
+    //    {
+    //        // If portal is facing away, flip it
+    //        rotation *= Quaternion.Euler(0, 180, 0);
+    //    }
+    //    Debug.Log(rotation.eulerAngles);
 
-        // Get width for object
-        float width = Vector3.Distance(bp1_v3, bp2_v3);
+    //    // Get width for object
+    //    float width = Vector3.Distance(bp1_v3, bp2_v3);
 
-        // Activate placement helper objects
-        // The helper quad is part of the placement helpers
-        // NOTE cam to door is pointing towards bottom point -> sehr schräg nach unten -> müsste in die mitte zeigen oder y wert auslassen bzw. mit rotation.eulerAngles.y ersetzen!
-        //placementHelpers.SetActive(true);
-        placementHelpers.transform.SetPositionAndRotation(bottomCenter, rotation);
+    //    // Activate placement helper objects
+    //    // The helper quad is part of the placement helpers
+    //    // NOTE cam to door is pointing towards bottom point -> sehr schräg nach unten -> müsste in die mitte zeigen oder y wert auslassen bzw. mit rotation.eulerAngles.y ersetzen!
+    //    //placementHelpers.SetActive(true);
+    //    placementHelpers.transform.SetPositionAndRotation(bottomCenter, rotation);
 
-        // Since the following raycasts are physics based, sync the placement helper transforms
-        Physics.SyncTransforms();
+    //    // Since the following raycasts are physics based, sync the placement helper transforms
+    //    Physics.SyncTransforms();
 
-        // Calulate height with help of a vertical quad that can be raycasted against
-        RaycastHit hit;
-        Vector3 tp1_v3, tp2_v3;
-        Ray ray;
+    //    // Calulate height with help of a vertical quad that can be raycasted against
+    //    RaycastHit hit;
+    //    Vector3 tp1_v3, tp2_v3;
+    //    Ray ray;
 
-        ray = cam.ScreenPointToRay(tp1);
-        Physics.Raycast(ray, out hit);
-        Debug.Log("top raycast1: " + hit.point);
-        tp1_v3 = hit.point;
+    //    ray = cam.ScreenPointToRay(tp1);
+    //    Physics.Raycast(ray, out hit);
+    //    Debug.Log("top raycast1: " + hit.point);
+    //    tp1_v3 = hit.point;
 
-        ray = cam.ScreenPointToRay(tp2);
-        Physics.Raycast(ray, out hit);
-        Debug.Log("top raycast2: " + hit.point);
-        tp2_v3 = hit.point;
+    //    ray = cam.ScreenPointToRay(tp2);
+    //    Physics.Raycast(ray, out hit);
+    //    Debug.Log("top raycast2: " + hit.point);
+    //    tp2_v3 = hit.point;
 
-        Vector3 topCenter = Vector3.zero;
+    //    Vector3 topCenter = Vector3.zero;
 
-        // Raycast did not hit the correct plane and is therefor not usable
-        if (tp1_v3 == Vector3.zero || tp2_v3 == Vector3.zero)
-        {
-            Debug.Log("RAYCAST DID NOT HIT");
-        }
-        else
-        {
-            topCenter = Vector3.Lerp(tp1_v3, tp2_v3, 0.5f);
-        }
-        Debug.Log("ImageToWorld, topCenter: " + topCenter);
+    //    // Raycast did not hit the correct plane and is therefor not usable
+    //    if (tp1_v3 == Vector3.zero || tp2_v3 == Vector3.zero)
+    //    {
+    //        Debug.Log("RAYCAST DID NOT HIT");
+    //    }
+    //    else
+    //    {
+    //        topCenter = Vector3.Lerp(tp1_v3, tp2_v3, 0.5f);
+    //    }
+    //    Debug.Log("ImageToWorld, topCenter: " + topCenter);
 
-        //Debug.Log("----");
-        //Debug.Log(rotation.eulerAngles);
-        //Debug.Log(Camera.main.transform.rotation.eulerAngles);
-        //Debug.Log(Quaternion.LookRotation(Camera.main.transform.position - bottomCenter).eulerAngles);
-
-
-        //Vector3 botToTopdir = (tp1_v3 - tp2_v3).normalized;
-        //Quaternion botToTopRot = Quaternion.LookRotation(direction);
-        //Debug.Log("Bottom to Top Rot " + botToTopRot.eulerAngles);
-
-        //float angleY = botToTopRot.eulerAngles.y;
-        //float angleDiffY = angleY > 180 ? 360 - angleY : angleY;
-
-        //rotation = Quaternion.Euler(rotation.eulerAngles + new Vector3(0, angleDiffY, 0));
-        //Debug.Log("rotation afterwards" + rotation.eulerAngles);
-        // TODO -> rotation von boden zu oben ist meist 340° oder ähnliches -> differenz zu 0 / 360 sollte als rotation aufgenommen werden
-
-        float height = Vector3.Distance(bottomCenter, topCenter);
+    //    //Debug.Log("----");
+    //    //Debug.Log(rotation.eulerAngles);
+    //    //Debug.Log(Camera.main.transform.rotation.eulerAngles);
+    //    //Debug.Log(Quaternion.LookRotation(Camera.main.transform.position - bottomCenter).eulerAngles);
 
 
-        // Check if there are really points behind the detected rectangle to verify it is a door
+    //    //Vector3 botToTopdir = (tp1_v3 - tp2_v3).normalized;
+    //    //Quaternion botToTopRot = Quaternion.LookRotation(direction);
+    //    //Debug.Log("Bottom to Top Rot " + botToTopRot.eulerAngles);
 
-        // Scale and position the collider box according to the measured height
-        placementColliderObj.transform.localPosition = new Vector3(0, height / 2, 0);
-        placementColliderObj.transform.localScale = new Vector3(width, height, 1);
+    //    //float angleY = botToTopRot.eulerAngles.y;
+    //    //float angleDiffY = angleY > 180 ? 360 - angleY : angleY;
 
-        // Sync the transform changes to be able to use the collider function
-        Physics.SyncTransforms();
+    //    //rotation = Quaternion.Euler(rotation.eulerAngles + new Vector3(0, angleDiffY, 0));
+    //    //Debug.Log("rotation afterwards" + rotation.eulerAngles);
+    //    // TODO -> rotation von boden zu oben ist meist 340° oder ähnliches -> differenz zu 0 / 360 sollte als rotation aufgenommen werden
 
-        bool spaceBehindDoor = false;
-        foreach (Vector3 point in cloud.positions)
-        {
-            if (placementCollider.bounds.Contains(point))
-            {
-                spaceBehindDoor = true;
-                break;
-            }
-        }
+    //    float height = Vector3.Distance(bottomCenter, topCenter);
 
-        if (!spaceBehindDoor)
-        {
-            textManager.ShowNotification(TextContent.noRealDoor);
-            return;
-        }
 
-        // Spawn object
-        portalManager.SpawnObject(bottomCenter, rotation, width, height);
-    }
+    //    // Check if there are really points behind the detected rectangle to verify it is a door
+
+    //    // Scale and position the collider box according to the measured height
+    //    placementColliderObj.transform.localPosition = new Vector3(0, height / 2, 0);
+    //    placementColliderObj.transform.localScale = new Vector3(width, height, 1);
+
+    //    // Sync the transform changes to be able to use the collider function
+    //    Physics.SyncTransforms();
+
+    //    bool spaceBehindDoor = false;
+    //    foreach (Vector3 point in cloud.positions)
+    //    {
+    //        if (placementCollider.bounds.Contains(point))
+    //        {
+    //            spaceBehindDoor = true;
+    //            break;
+    //        }
+    //    }
+
+    //    if (!spaceBehindDoor)
+    //    {
+    //        textManager.ShowNotification(TextContent.noRealDoor);
+    //        return;
+    //    }
+
+    //    // Spawn object
+    //    portalManager.SpawnObject(bottomCenter, rotation, width, height);
+    //}
 }

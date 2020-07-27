@@ -135,7 +135,7 @@ public class CameraImageManipulation : MonoBehaviour
         bool success = ProcessImage(resultArray, rawPixels, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y, true);
 
         //imageToWorld.TransferIntoWorld(success, resultArray);
-        imageToWorld.ShowWorldIndicator(success, resultArray);
+        imageToWorld.CheckConversion(success, resultArray);
 
         // Done with our temporary data
         buffer.Dispose();
