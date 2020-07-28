@@ -10,18 +10,14 @@ public class TouchManager : MonoBehaviour
     private RectTransform touchIndicatorTransform;
     private Image touchIndicatorImg;
 
-    // Swipe properties
-    public float minSwipeDist = 25.0f;
-    public float maxTime = 1.5f;
-
     // Touch properties
     public float maxTouchDist = 10.0f;
     public float minTime = 0.1f;
+    public float maxTime = 1.0f;
 
     private float startTime;
     private Vector2 startPos;
 
-    private bool swipePossible;
     private bool singleTouchPossible;
 
     public ButtonManager btnManager;
@@ -66,18 +62,14 @@ public class TouchManager : MonoBehaviour
                     if (EventSystem.current.currentSelectedGameObject)
                     {
                         singleTouchPossible = false;
-                        swipePossible = false;
                         return;
                     }
-
-                    swipePossible = true;
 
                     startPos = touch.position;
                     startTime = Time.time;
                     break;
 
                 case TouchPhase.Stationary:
-                    swipePossible = false;
                     singleTouchPossible = true;
                     break;
 
@@ -90,18 +82,9 @@ public class TouchManager : MonoBehaviour
                         return;
                     }
 
-                    float swipeDist = Mathf.Abs(touch.position.x - startPos.x);
                     float distance = Vector2.Distance(touch.position, startPos);
 
-                    if (swipePossible && (swipeDist > minSwipeDist))
-                    {
-                        int swipeDirection = (int)Mathf.Sign(touch.position.y - startPos.y);
-                        Debug.Log("swipe");
-                        Debug.Log(swipeDirection);
-
-                        btnManager.SwipeAugmentation(swipeDirection);
-                    }
-                    else if (singleTouchPossible)
+                    if (singleTouchPossible)
                     {
                         if (touchTime < minTime)
                         {

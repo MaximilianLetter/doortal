@@ -126,7 +126,12 @@ public class CameraImageManipulation : MonoBehaviour
         Vector2[] resultArray = new Vector2[CORNERS];
 
         // Call to C++ Code
+        float startT = Time.realtimeSinceStartup;
         bool success = ProcessImage(resultArray, rawPixels, userInput, conversionParams.outputDimensions.x, conversionParams.outputDimensions.y, true);
+        float endT = Time.realtimeSinceStartup;
+
+        Debug.Log("DetectionTime: ");
+        Debug.Log(endT - startT);
 
         imageToWorld.TransferIntoWorld(success, resultArray);
         //imageToWorld.ShowIndicator(success, resultArray);
