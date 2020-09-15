@@ -1224,31 +1224,7 @@ Transform:
   m_Father: {fileID: 175876397}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!224 &1017689384 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1074134435325223798, guid: acb1127743386a94a824b433f085c23c,
-    type: 3}
-  m_PrefabInstance: {fileID: 1074134434715506270}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1182236099 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6067126755542164576, guid: b96608dcc4c8d8946842b3c606d7f15a,
-    type: 3}
-  m_PrefabInstance: {fileID: 6067126756512143779}
-  m_PrefabAsset: {fileID: 0}
---- !u!20 &1231366417 stripped
-Camera:
-  m_CorrespondingSourceObject: {fileID: 6067126755542164583, guid: b96608dcc4c8d8946842b3c606d7f15a,
-    type: 3}
-  m_PrefabInstance: {fileID: 6067126756512143779}
-  m_PrefabAsset: {fileID: 0}
---- !u!224 &1290798637 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1410882243981248688, guid: 7f459dc928edf6f45ab5f85c60a9e191,
-    type: 3}
-  m_PrefabInstance: {fileID: 141720949}
-  m_PrefabAsset: {fileID: 0}
---- !u!84 &1301577424
+--- !u!84 &884609473
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1283,6 +1259,30 @@ RenderTexture:
     m_WrapW: 1
   m_Dimension: 2
   m_VolumeDepth: 1
+--- !u!224 &1017689384 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1074134435325223798, guid: acb1127743386a94a824b433f085c23c,
+    type: 3}
+  m_PrefabInstance: {fileID: 1074134434715506270}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1182236099 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6067126755542164576, guid: b96608dcc4c8d8946842b3c606d7f15a,
+    type: 3}
+  m_PrefabInstance: {fileID: 6067126756512143779}
+  m_PrefabAsset: {fileID: 0}
+--- !u!20 &1231366417 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 6067126755542164583, guid: b96608dcc4c8d8946842b3c606d7f15a,
+    type: 3}
+  m_PrefabInstance: {fileID: 6067126756512143779}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &1290798637 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1410882243981248688, guid: 7f459dc928edf6f45ab5f85c60a9e191,
+    type: 3}
+  m_PrefabInstance: {fileID: 141720949}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1367133483
 GameObject:
   m_ObjectHideFlags: 0
@@ -2126,7 +2126,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_TargetTexture
       value: 
-      objectReference: {fileID: 1301577424}
+      objectReference: {fileID: 884609473}
     - target: {fileID: 6067126755542164583, guid: b96608dcc4c8d8946842b3c606d7f15a,
         type: 3}
       propertyPath: near clip plane
